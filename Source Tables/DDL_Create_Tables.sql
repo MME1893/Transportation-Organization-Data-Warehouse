@@ -3,22 +3,111 @@
   -----------------------------------------------------------------------------
 
 ===============================================================================*/
-CREATE SCHEMA [Lookup];
+
+
+/* 1. Lookup ---------------------------------------------------*/
+IF NOT EXISTS (SELECT 1 FROM sys.schemas WHERE name = N'Lookup')
+    EXEC (N'CREATE SCHEMA [Lookup]');
 GO
 
-CREATE SCHEMA Transport;
+/* 2. Transport ------------------------------------------------*/
+IF NOT EXISTS (SELECT 1 FROM sys.schemas WHERE name = N'Transport')
+    EXEC (N'CREATE SCHEMA [Transport]');
 GO
 
-CREATE SCHEMA Financial;
+/* 3. Financial -----------------------------------------------*/
+IF NOT EXISTS (SELECT 1 FROM sys.schemas WHERE name = N'Financial')
+    EXEC (N'CREATE SCHEMA [Financial]');
 GO
 
-CREATE SCHEMA Maintenance;
+/* 4. Maintenance ---------------------------------------------*/
+IF NOT EXISTS (SELECT 1 FROM sys.schemas WHERE name = N'Maintenance')
+    EXEC (N'CREATE SCHEMA [Maintenance]');
 GO
 
-CREATE SCHEMA HR;
+/* 5. HR -------------------------------------------------------*/
+IF NOT EXISTS (SELECT 1 FROM sys.schemas WHERE name = N'HR')
+    EXEC (N'CREATE SCHEMA [HR]');
 GO
 
 
+
+-- Step 1: Drop all foreign key constraints that reference Lookup tables
+DECLARE @sql NVARCHAR(MAX) = N'';
+
+SELECT @sql += '
+ALTER TABLE [' + OBJECT_SCHEMA_NAME(parent_object_id) + '].[' + OBJECT_NAME(parent_object_id) + '] 
+DROP CONSTRAINT [' + name + '];'
+FROM sys.foreign_keys
+WHERE referenced_object_id IN (
+    OBJECT_ID('Lookup.LkpVehicleType'),
+    OBJECT_ID('Lookup.LkpVehicleStatus'),
+    OBJECT_ID('Lookup.LkpRouteStatus'),
+    OBJECT_ID('Lookup.LkpJourneyStatus'),
+    OBJECT_ID('Lookup.LkpDeviceType'),
+    OBJECT_ID('Lookup.LkpDeviceStatus'),
+    OBJECT_ID('Lookup.LkpCardType'),
+    OBJECT_ID('Lookup.LkpCardStatus'),
+    OBJECT_ID('Lookup.LkpPaymentMethod'),
+    OBJECT_ID('Lookup.LkpSalesChannel'),
+    OBJECT_ID('Lookup.LkpMaintenanceType'),
+    OBJECT_ID('Lookup.LkpPartCategory'),
+    OBJECT_ID('Lookup.LkpRole'),
+    OBJECT_ID('Lookup.LkpDepartment'),
+    OBJECT_ID('Lookup.LkpShiftType'),
+    OBJECT_ID('Lookup.LkpFuelType')
+);
+
+EXEC sp_executesql @sql;
+
+-- Step 2: Drop the Lookup tables if they exist
+IF OBJECT_ID(N'Lookup.LkpVehicleType', N'U') IS NOT NULL
+    DROP TABLE Lookup.LkpVehicleType;
+
+IF OBJECT_ID(N'Lookup.LkpVehicleStatus', N'U') IS NOT NULL
+    DROP TABLE Lookup.LkpVehicleStatus;
+
+IF OBJECT_ID(N'Lookup.LkpRouteStatus', N'U') IS NOT NULL
+    DROP TABLE Lookup.LkpRouteStatus;
+
+IF OBJECT_ID(N'Lookup.LkpJourneyStatus', N'U') IS NOT NULL
+    DROP TABLE Lookup.LkpJourneyStatus;
+
+IF OBJECT_ID(N'Lookup.LkpDeviceType', N'U') IS NOT NULL
+    DROP TABLE Lookup.LkpDeviceType;
+
+IF OBJECT_ID(N'Lookup.LkpDeviceStatus', N'U') IS NOT NULL
+    DROP TABLE Lookup.LkpDeviceStatus;
+
+IF OBJECT_ID(N'Lookup.LkpCardType', N'U') IS NOT NULL
+    DROP TABLE Lookup.LkpCardType;
+
+IF OBJECT_ID(N'Lookup.LkpCardStatus', N'U') IS NOT NULL
+    DROP TABLE Lookup.LkpCardStatus;
+
+IF OBJECT_ID(N'Lookup.LkpPaymentMethod', N'U') IS NOT NULL
+    DROP TABLE Lookup.LkpPaymentMethod;
+
+IF OBJECT_ID(N'Lookup.LkpSalesChannel', N'U') IS NOT NULL
+    DROP TABLE Lookup.LkpSalesChannel;
+
+IF OBJECT_ID(N'Lookup.LkpMaintenanceType', N'U') IS NOT NULL
+    DROP TABLE Lookup.LkpMaintenanceType;
+
+IF OBJECT_ID(N'Lookup.LkpPartCategory', N'U') IS NOT NULL
+    DROP TABLE Lookup.LkpPartCategory;
+
+IF OBJECT_ID(N'Lookup.LkpRole', N'U') IS NOT NULL
+    DROP TABLE Lookup.LkpRole;
+
+IF OBJECT_ID(N'Lookup.LkpDepartment', N'U') IS NOT NULL
+    DROP TABLE Lookup.LkpDepartment;
+
+IF OBJECT_ID(N'Lookup.LkpShiftType', N'U') IS NOT NULL
+    DROP TABLE Lookup.LkpShiftType;
+
+IF OBJECT_ID(N'Lookup.LkpFuelType', N'U') IS NOT NULL
+    DROP TABLE Lookup.LkpFuelType;
 
 
 
@@ -311,6 +400,65 @@ CREATE TABLE [Lookup].LkpFuelType (
     Label_FA   NVARCHAR(50) NOT NULL                
 );
 
+
+
+
+-- Step 1: Drop all foreign key constraints referencing these Transport tables
+DECLARE @sql NVARCHAR(MAX) = N'';
+
+SELECT @sql += '
+ALTER TABLE [' + OBJECT_SCHEMA_NAME(parent_object_id) + '].[' + OBJECT_NAME(parent_object_id) + '] 
+DROP CONSTRAINT [' + name + '];'
+FROM sys.foreign_keys
+WHERE referenced_object_id IN (
+    OBJECT_ID('Transport.Station'),
+    OBJECT_ID('Transport.Route'),
+    OBJECT_ID('Transport.RouteStation'),
+    OBJECT_ID('Transport.Vehicle'),
+    OBJECT_ID('Transport.VehicleStatusHistory'),
+    OBJECT_ID('Transport.Journey'),
+    OBJECT_ID('Transport.JourneyStatusEvent'),
+    OBJECT_ID('Transport.ArrivalEvent'),
+    OBJECT_ID('Transport.PaymentDevice'),
+    OBJECT_ID('Transport.DeviceAssignment'),
+    OBJECT_ID('Transport.PaymentTxn')
+);
+
+EXEC sp_executesql @sql;
+
+-- Step 2: Drop the Transport tables if they exist
+IF OBJECT_ID(N'Transport.PaymentTxn', N'U') IS NOT NULL
+    DROP TABLE Transport.PaymentTxn;
+
+IF OBJECT_ID(N'Transport.DeviceAssignment', N'U') IS NOT NULL
+    DROP TABLE Transport.DeviceAssignment;
+
+IF OBJECT_ID(N'Transport.PaymentDevice', N'U') IS NOT NULL
+    DROP TABLE Transport.PaymentDevice;
+
+IF OBJECT_ID(N'Transport.ArrivalEvent', N'U') IS NOT NULL
+    DROP TABLE Transport.ArrivalEvent;
+
+IF OBJECT_ID(N'Transport.JourneyStatusEvent', N'U') IS NOT NULL
+    DROP TABLE Transport.JourneyStatusEvent;
+
+IF OBJECT_ID(N'Transport.Journey', N'U') IS NOT NULL
+    DROP TABLE Transport.Journey;
+
+IF OBJECT_ID(N'Transport.VehicleStatusHistory', N'U') IS NOT NULL
+    DROP TABLE Transport.VehicleStatusHistory;
+
+IF OBJECT_ID(N'Transport.Vehicle', N'U') IS NOT NULL
+    DROP TABLE Transport.Vehicle;
+
+IF OBJECT_ID(N'Transport.RouteStation', N'U') IS NOT NULL
+    DROP TABLE Transport.RouteStation;
+
+IF OBJECT_ID(N'Transport.Route', N'U') IS NOT NULL
+    DROP TABLE Transport.Route;
+
+IF OBJECT_ID(N'Transport.Station', N'U') IS NOT NULL
+    DROP TABLE Transport.Station;
 
 
 
@@ -625,6 +773,36 @@ CREATE TABLE [Transport].PaymentTxn (
 
 
 
+ -- Step 1: Drop all foreign key constraints referencing Financial tables
+DECLARE @sql NVARCHAR(MAX) = N'';
+
+SELECT @sql += '
+ALTER TABLE [' + OBJECT_SCHEMA_NAME(parent_object_id) + '].[' + OBJECT_NAME(parent_object_id) + '] 
+DROP CONSTRAINT [' + name + '];'
+FROM sys.foreign_keys
+WHERE referenced_object_id IN (
+    OBJECT_ID('Financial.TicketSaleTxn'),
+    OBJECT_ID('Financial.Ticket'),
+    OBJECT_ID('Financial.CardTopUpTxn'),
+    OBJECT_ID('Financial.Card')
+);
+
+EXEC sp_executesql @sql;
+
+-- Step 2: Drop the Financial tables if they exist (drop children first)
+IF OBJECT_ID(N'Financial.TicketSaleTxn', N'U') IS NOT NULL
+    DROP TABLE Financial.TicketSaleTxn;
+
+IF OBJECT_ID(N'Financial.Ticket', N'U') IS NOT NULL
+    DROP TABLE Financial.Ticket;
+
+IF OBJECT_ID(N'Financial.CardTopUpTxn', N'U') IS NOT NULL
+    DROP TABLE Financial.CardTopUpTxn;
+
+IF OBJECT_ID(N'Financial.Card', N'U') IS NOT NULL
+    DROP TABLE Financial.Card;
+
+
 
 /*===============================================================================
   2) FINANCIAL DOMAIN (feeds Financial Mart)
@@ -646,7 +824,7 @@ CREATE TABLE [Transport].PaymentTxn (
 --   LastTopUpDT     : Timestamp of most recent top-up.
 --   IsActive        : Flag indicating if card is active (1) or retired (0).
 -- =============================================================================
-CREATE TABLE [Financial].Card (
+CREATE TABLE [Financial].[Card] (
     CardID          BIGINT IDENTITY PRIMARY KEY,       
     CardTypeID      INT NOT NULL                       
         FOREIGN KEY REFERENCES [Lookup].LkpCardType(CardTypeID),
@@ -717,7 +895,7 @@ CREATE TABLE [Financial].Ticket (
 -- Index:
 --   IX_TicketSale_Time: Index to quickly query sales by datetime.
 -- =============================================================================
-CREATE TABLE TicketSaleTxn (
+CREATE TABLE [Financial].TicketSaleTxn (
     SaleID          BIGINT IDENTITY PRIMARY KEY,       
     TicketID        BIGINT NOT NULL                    
         FOREIGN KEY REFERENCES [Financial].Ticket(TicketID),
@@ -731,6 +909,43 @@ CREATE TABLE TicketSaleTxn (
 CREATE INDEX IX_TicketSale_Time ON TicketSaleTxn (SaleDT);
 
 
+
+
+
+
+
+-- Step 1: Drop all foreign key constraints referencing the Maintenance tables
+DECLARE @sql NVARCHAR(MAX) = N'';
+
+SELECT @sql += '
+ALTER TABLE [' + OBJECT_SCHEMA_NAME(parent_object_id) + '].[' + OBJECT_NAME(parent_object_id) + '] 
+DROP CONSTRAINT [' + name + '];'
+FROM sys.foreign_keys
+WHERE referenced_object_id IN (
+    OBJECT_ID('Maintenance.FuelingEvent'),
+    OBJECT_ID('Maintenance.WorkOrderPartReplacement'),
+    OBJECT_ID('Maintenance.MaintenanceWorkOrder'),
+    OBJECT_ID('Maintenance.Supplier'),
+    OBJECT_ID('Maintenance.Part')
+);
+
+EXEC sp_executesql @sql;
+
+-- Step 2: Drop the Maintenance tables if they exist
+IF OBJECT_ID(N'Maintenance.FuelingEvent', N'U') IS NOT NULL
+    DROP TABLE Maintenance.FuelingEvent;
+
+IF OBJECT_ID(N'Maintenance.WorkOrderPartReplacement', N'U') IS NOT NULL
+    DROP TABLE Maintenance.WorkOrderPartReplacement;
+
+IF OBJECT_ID(N'Maintenance.MaintenanceWorkOrder', N'U') IS NOT NULL
+    DROP TABLE Maintenance.MaintenanceWorkOrder;
+
+IF OBJECT_ID(N'Maintenance.Supplier', N'U') IS NOT NULL
+    DROP TABLE Maintenance.Supplier;
+
+IF OBJECT_ID(N'Maintenance.Part', N'U') IS NOT NULL
+    DROP TABLE Maintenance.Part;
 
 
 /*===============================================================================
@@ -873,6 +1088,34 @@ CREATE TABLE [Maintenance].FuelingEvent (
 );
 
 
+-- Step 1: Drop all foreign key constraints referencing HR tables
+DECLARE @sql NVARCHAR(MAX) = N'';
+
+SELECT @sql += '
+ALTER TABLE [' + OBJECT_SCHEMA_NAME(parent_object_id) + '].[' + OBJECT_NAME(parent_object_id) + '] 
+DROP CONSTRAINT [' + name + '];'
+FROM sys.foreign_keys
+WHERE referenced_object_id IN (
+    OBJECT_ID('HR.Employee'),
+    OBJECT_ID('HR.EmployeeRoleHistory'),
+    OBJECT_ID('HR.Shift'),
+    OBJECT_ID('HR.PayrollTxn')
+);
+
+EXEC sp_executesql @sql;
+
+-- Step 2: Drop the HR tables if they exist (in dependency-safe order)
+IF OBJECT_ID(N'HR.EmployeeRoleHistory', N'U') IS NOT NULL
+    DROP TABLE HR.EmployeeRoleHistory;
+
+IF OBJECT_ID(N'HR.PayrollTxn', N'U') IS NOT NULL
+    DROP TABLE HR.PayrollTxn;
+
+IF OBJECT_ID(N'HR.Shift', N'U') IS NOT NULL
+    DROP TABLE HR.Shift;
+
+IF OBJECT_ID(N'HR.Employee', N'U') IS NOT NULL
+    DROP TABLE HR.Employee;
 
 
 /*===============================================================================

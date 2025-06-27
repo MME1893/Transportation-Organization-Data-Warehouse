@@ -1,25 +1,25 @@
-﻿Use TransitDW;
+﻿Use TransitDW
 
-go
-CREATE SCHEMA [Financial]
+GO
 
+--CREATE SCHEMA [Financial]
+
+IF NOT EXISTS (SELECT 1 FROM sys.schemas WHERE name = N'Financial')
+    EXEC (N'CREATE SCHEMA [Financial]');
+GO
 
 
 IF OBJECT_ID('[Financial].[DimCardType]', 'U') IS NOT NULL DROP TABLE [Financial].[DimCardType];
 IF OBJECT_ID('[Financial].[DimCardStatus]', 'U') IS NOT NULL DROP TABLE [Financial].[DimCardStatus];
 IF OBJECT_ID('[Financial].[DimSalesChannel]', 'U') IS NOT NULL DROP TABLE [Financial].[DimSalesChannel];
-
 IF OBJECT_ID('[Financial].[FactTrnsCardTopUp]', 'U') IS NOT NULL DROP TABLE [Financial].[FactTrnsCardTopUp];
 IF OBJECT_ID('[Financial].[FactDailyCardTopUp]', 'U') IS NOT NULL DROP TABLE [Financial].[FactDailyCardTopUp];
 IF OBJECT_ID('[Financial].[FactAccCardTopUp]', 'U') IS NOT NULL DROP TABLE [Financial].[FactAccCardTopUp];
 IF OBJECT_ID('[Financial].[FactTrnsTicketSale]', 'U') IS NOT NULL DROP TABLE [Financial].[FactTrnsTicketSale];
 IF OBJECT_ID('[Financial].[FactDailyTicketSale]', 'U') IS NOT NULL DROP TABLE [Financial].[FactDailyTicketSale];
 IF OBJECT_ID('[Financial].[FactAccTicketSale]', 'U') IS NOT NULL DROP TABLE [Financial].[FactAccTicketSale];
-
-
-
-
-
+IF OBJECT_ID('[Financial].[TimeFactAccCardTopUp]', 'U') IS NOT NULL DROP TABLE [Financial].[TimeFactAccCardTopUp];
+IF OBJECT_ID('[Financial].[TimeFactAccTicketSale]', 'U') IS NOT NULL DROP TABLE [Financial].[TimeFactAccTicketSale];
 
 
 
@@ -31,10 +31,8 @@ IF OBJECT_ID('[Financial].[FactAccTicketSale]', 'U') IS NOT NULL DROP TABLE [Fin
 
 
 /*********************    DimCardType Table    *********************/--
-
-
 CREATE TABLE [Financial].DimCardType (
-    CardTypeID_BK   INT NOT NULL UNIQUE,
+    CardTypeID_BK   INT,
     TypeCode        VARCHAR(50),
     Label_EN        VARCHAR(100),
     Label_FA        NVARCHAR(100)
@@ -42,10 +40,8 @@ CREATE TABLE [Financial].DimCardType (
 
 
 /*********************    DimCardStatus Table    *********************/--
-
-
 CREATE TABLE [Financial].DimCardStatus (
-    CardStatusID_BK INT NOT NULL UNIQUE,
+    CardStatusID_BK INT,
     StatusCode      VARCHAR(50),
     Label_EN        VARCHAR(100),
     Label_FA        NVARCHAR(100)
@@ -53,10 +49,8 @@ CREATE TABLE [Financial].DimCardStatus (
 
 
 /*********************    DimSalesChannel Table (scd1)   *********************/--
-
-
 CREATE TABLE [Financial].DimSalesChannel (
-    SalesChannelID_BK INT NOT NULL UNIQUE,
+    SalesChannelID_BK INT ,
     ChannelCode     VARCHAR(50),
     Label_EN        VARCHAR(100),
     Label_FA        NVARCHAR(100)
@@ -71,8 +65,6 @@ CREATE TABLE [Financial].DimSalesChannel (
 
 
 /*********************    FactTrnsCardTopUp Table    *********************/--
-
-
 CREATE TABLE [Financial].FactTrnsCardTopUp (            -- transactional
     DateKey        INT , --NOT NULL REFERENCES DimDate(DateKey),
 	StationKey     INT , --NULL REFERENCES DimStation(StationKey),
@@ -85,8 +77,6 @@ CREATE TABLE [Financial].FactTrnsCardTopUp (            -- transactional
 
 
 /*********************    FactDailyCardTopUp Table    *********************/--
-
-
 CREATE TABLE [Financial].FactDailyCardTopUp ( 
     DateKey        INT , --NOT NULL REFERENCES DimDate(DateKey),
     CardTypeKey    INT , --NOT NULL REFERENCES DimCardType(CardTypeKey),
@@ -99,8 +89,6 @@ CREATE TABLE [Financial].FactDailyCardTopUp (
 
 
 /*********************    FactAccCardTopUp Table    *********************/--
-
-
 CREATE TABLE [Financial].FactAccCardTopUp (
 	 StationKey     INT , --NULL REFERENCES DimStation(StationKey),
 	 SalesChannelKey INT , --NOT NULL REFERENCES DimSalesChannel(SalesChannelKey),
@@ -111,13 +99,14 @@ CREATE TABLE [Financial].FactAccCardTopUp (
 	 TotalTopUps    INT   --NOT NULL
 );
 
+
 CREATE TABLE [Financial].TimeFactAccCardTopUp
 (
 	[Date] DATE
 );
 
-/*********************    FactTrnsTicketSale Table    *********************/
 
+/*********************    FactTrnsTicketSale Table    *********************/
 CREATE TABLE [Financial].FactTrnsTicketSale (       -- transactional
     DateKey        INT	, --NOT NULL REFERENCES DimDate(DateKey),
 	StationKey     INT	, --NOT NULL REFERENCES DimStation(StationKey),
@@ -129,8 +118,6 @@ CREATE TABLE [Financial].FactTrnsTicketSale (       -- transactional
 
 
 /*********************    FactDailyTicketSale Table    *********************/
-
-
 CREATE TABLE [Financial].FactDailyTicketSale (
     DateKey          INT   ,-- NOT NULL REFERENCES DimDate(DateKey),
     StationKey       INT   ,-- NOT NULL REFERENCES DimStation(StationKey),

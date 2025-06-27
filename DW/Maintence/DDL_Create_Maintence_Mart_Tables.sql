@@ -1,26 +1,26 @@
-﻿Use TransitDW;
+﻿Use TransitDW
 
-go
-CREATE SCHEMA [Maintence]
-
+GO
 
 
-IF OBJECT_ID('[Financial].[DimCardType]', 'U') IS NOT NULL DROP TABLE [Financial].[DimCardType];
-IF OBJECT_ID('[Financial].[DimCardStatus]', 'U') IS NOT NULL DROP TABLE [Financial].[DimCardStatus];
-IF OBJECT_ID('[Financial].[DimSalesChannel]', 'U') IS NOT NULL DROP TABLE [Financial].[DimSalesChannel];
-
-IF OBJECT_ID('[Financial].[FactTrnsCardTopUp]', 'U') IS NOT NULL DROP TABLE [Financial].[FactTrnsCardTopUp];
-IF OBJECT_ID('[Financial].[FactDailyCardTopUp]', 'U') IS NOT NULL DROP TABLE [Financial].[FactDailyCardTopUp];
-IF OBJECT_ID('[Financial].[FactAccCardTopUp]', 'U') IS NOT NULL DROP TABLE [Financial].[FactAccCardTopUp];
-IF OBJECT_ID('[Financial].[FactTrnsTicketSale]', 'U') IS NOT NULL DROP TABLE [Financial].[FactTrnsTicketSale];
-IF OBJECT_ID('[Financial].[FactDailyTicketSale]', 'U') IS NOT NULL DROP TABLE [Financial].[FactDailyTicketSale];
-IF OBJECT_ID('[Financial].[FactAccTicketSale]', 'U') IS NOT NULL DROP TABLE [Financial].[FactAccTicketSale];
+IF NOT EXISTS (SELECT 1 FROM sys.schemas WHERE name = N'Maintence')
+    EXEC (N'CREATE SCHEMA [Maintence]');
+GO
 
 
 
+IF OBJECT_ID('[Maintence].DimMaintenanceType', 'U') IS NOT NULL DROP TABLE [Maintence].DimMaintenanceType;
+IF OBJECT_ID('[Maintence].DimPartCategory', 'U')	IS NOT NULL DROP TABLE [Maintence].DimPartCategory;
+IF OBJECT_ID('[Maintence].DimSupplier', 'U')		IS NOT NULL DROP TABLE [Maintence].DimSupplier;
+IF OBJECT_ID('[Maintence].DimPart', 'U')					IS NOT NULL DROP TABLE [Maintence].DimPart;
+IF OBJECT_ID('[Maintence].DimFuelType', 'U')				IS NOT NULL DROP TABLE [Maintence].DimFuelType;
 
-
-
+IF OBJECT_ID('[Maintence].FactMaintenanceDetail', 'U')		IS NOT NULL DROP TABLE [Maintence].FactMaintenanceDetail;
+IF OBJECT_ID('[Maintence].FactMonthlyMaintenanceWO', 'U')	IS NOT NULL DROP TABLE [Maintence].FactMonthlyMaintenanceWO;
+IF OBJECT_ID('[Maintence].FactAccMaintenanceWO', 'U')		IS NOT NULL DROP TABLE [Maintence].FactAccMaintenanceWO;
+IF OBJECT_ID('[Maintence].FactTrnsFueling', 'U')			IS NOT NULL DROP TABLE [Maintence].FactTrnsFueling;
+IF OBJECT_ID('[Maintence].FactMonthlyFueling', 'U')			IS NOT NULL DROP TABLE [Maintence].FactMonthlyFueling;
+IF OBJECT_ID('[Maintence].FactAccFueling', 'U')		IS NOT NULL DROP TABLE [Maintence].FactAccFueling;
 
 
 /*===============================================================================
@@ -28,11 +28,7 @@ IF OBJECT_ID('[Financial].[FactAccTicketSale]', 'U') IS NOT NULL DROP TABLE [Fin
 ===============================================================================*/
 
 
-
-
-/*********************    DimMaintenanceType Table    *********************/--
-
-
+/*********************    DimMaintenanceType Table    *********************/
 CREATE TABLE [Maintence].DimMaintenanceType (
     MaintenanceTypeID_BK INT , -- NOT NULL UNIQUE,
     TypeCode        VARCHAR(50),
@@ -41,9 +37,7 @@ CREATE TABLE [Maintence].DimMaintenanceType (
 );
 
 
-/*********************    DimPartCategory Table    *********************/--
-
-
+/*********************    DimPartCategory Table    *********************/
 CREATE TABLE [Maintence].DimPartCategory (
     PartCategoryID_BK INT , -- NOT NULL UNIQUE,
     CategoryCode    VARCHAR(50),
@@ -51,9 +45,8 @@ CREATE TABLE [Maintence].DimPartCategory (
     Label_FA        NVARCHAR(100)
 );
 
-/*********************    DimSalesChannel Table    *********************/--
 
-
+/*********************    DimSalesChannel Table    *********************/
 CREATE TABLE [Maintence].DimSupplier (
     SupplierID_BK    INT    , --NOT NULL UNIQUE,        -- business key from source.S upplierID
     SupplierName     NVARCHAR(100) , --NOT NULL,
@@ -74,8 +67,7 @@ CREATE TABLE [Maintence].DimSupplier (
 );
 
 
-/*********************    DimPart Table   *********************/--
-
+/*********************    DimPart Table   *********************/
 CREATE TABLE [Maintence].DimPart (
     PartID_BK       INT , --NOT NULL UNIQUE,
     PartName        VARCHAR(100),
@@ -83,8 +75,8 @@ CREATE TABLE [Maintence].DimPart (
     UnitCostLatest  MONEY
 );
 
-/*********************    DimFuelType Table   *********************/--
 
+/*********************    DimFuelType Table   *********************/
 CREATE TABLE [Maintence].DimFuelType (
     FuelTypeID_BK   INT , --NOT NULL UNIQUE,
     FuelCode        VARCHAR(50),
@@ -99,10 +91,7 @@ CREATE TABLE [Maintence].DimFuelType (
 ===============================================================================*/
 
 
-
-/*********************    FactTrnsMaintenanceDetail Table    *********************/--
-
-
+/*********************    FactTrnsMaintenanceDetail Table    *********************/
 -- “No part” dummy row for part-less WOs
 IF NOT EXISTS (SELECT 1 FROM [Maintence].DimPart WHERE PartID_BK = -1)
 INSERT INTO [Maintence].DimPart (PartID_BK, PartName, PartCategoryKey, UnitCostLatest)
@@ -134,8 +123,7 @@ CREATE TABLE [Maintence].FactMaintenanceDetail (
 );
 
 
-/*********************    FactMonthlyMaintenanceWO Table    *********************/--
-
+/*********************    FactMonthlyMaintenanceWO Table    *********************/
 CREATE TABLE [Maintence].FactMonthlyMaintenanceWO (
     DateKey         INT           , -- NOT NULL REFERENCES DimDate(DateKey),   -- e.g. 20250501
     VehicleKey      INT			  , -- NOT NULL REFERENCES DimVehicle(VehicleKey),
@@ -149,9 +137,8 @@ CREATE TABLE [Maintence].FactMonthlyMaintenanceWO (
     TotalCost       MONEY         -- NOT NULL DEFAULT 0,   -- Labor + Parts
 );
 
-/*********************    FactAccMaintenanceWO Table    *********************/--
 
-
+/*********************    FactAccMaintenanceWO Table    *********************/
 CREATE TABLE [Maintence].FactAccMaintenanceWO (
 
     VehicleKey      INT           , -- NOT NULL REFERENCES DimVehicle(VehicleKey),
@@ -166,8 +153,8 @@ CREATE TABLE [Maintence].FactAccMaintenanceWO (
     TotalCost       MONEY           -- NOT NULL DEFAULT 0,
 );
 
-/*********************    FactTrnsFueling Table    *********************/
 
+/*********************    FactTrnsFueling Table    *********************/
 CREATE TABLE [Maintence].FactTrnsFueling (
     DateKey      INT , -- NOT NULL REFERENCES DimDate(DateKey),
     TimeKey      SMALLINT , -- NOT NULL REFERENCES DimTime(TimeKey),
@@ -177,9 +164,8 @@ CREATE TABLE [Maintence].FactTrnsFueling (
     FuelCost     MONEY  -- NOT NULL
 );
 
+
 /*********************    FactMonthlyFueling Table    *********************/
-
-
 CREATE TABLE [Maintence].FactMonthlyFueling (
     DateKey INT , -- NOT NULL REFERENCES DimDate(DateKey),  -- e.g., first day of month
     VehicleKey      INT , -- NOT NULL REFERENCES DimVehicle(VehicleKey),
@@ -191,9 +177,8 @@ CREATE TABLE [Maintence].FactMonthlyFueling (
     -- CONSTRAINT PK_FactMonthlyFueling PRIMARY KEY (SnapshotDateKey, VehicleKey, FuelTypeKey)
 );
 
+
 /*********************    FactAccFueling Table    *********************/
-
-
 CREATE TABLE [Maintence].FactAccFueling (
 
     VehicleKey        INT            , -- NOT NULL  REFERENCES DimVehicle(VehicleKey),

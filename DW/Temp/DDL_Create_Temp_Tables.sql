@@ -1,11 +1,54 @@
-﻿Use TransitDW;
+﻿Use TransitDW
 
-CREATE SCHEMA Temp
-go
+IF NOT EXISTS (SELECT 1 FROM sys.schemas WHERE name = N'Temp')
+    EXEC (N'CREATE SCHEMA [Temp]');
+GO
+
+-- Drop Temp tables only if they exist
+
+-- DimEmployee
+IF OBJECT_ID(N'Temp.temp1_DimEmployee', N'U') IS NOT NULL DROP TABLE Temp.temp1_DimEmployee;
+IF OBJECT_ID(N'Temp.temp2_DimEmployee', N'U') IS NOT NULL DROP TABLE Temp.temp2_DimEmployee;
+IF OBJECT_ID(N'Temp.temp3_DimEmployee', N'U') IS NOT NULL DROP TABLE Temp.temp3_DimEmployee;
+
+-- DimStation
+IF OBJECT_ID(N'Temp.temp1_DimStation', N'U') IS NOT NULL DROP TABLE Temp.temp1_DimStation;
+
+-- DimRoute
+IF OBJECT_ID(N'Temp.temp1_DimRoute', N'U') IS NOT NULL DROP TABLE Temp.temp1_DimRoute;
+IF OBJECT_ID(N'Temp.temp2_DimRoute', N'U') IS NOT NULL DROP TABLE Temp.temp2_DimRoute;
+
+-- DimVehicle
+IF OBJECT_ID(N'Temp.temp1_DimVehicle', N'U') IS NOT NULL DROP TABLE Temp.temp1_DimVehicle;
+IF OBJECT_ID(N'Temp.temp2_DimVehicle', N'U') IS NOT NULL DROP TABLE Temp.temp2_DimVehicle;
+IF OBJECT_ID(N'Temp.temp3_DimVehicle', N'U') IS NOT NULL DROP TABLE Temp.temp3_DimVehicle;
+
+-- FactAccCardTopUp
+IF OBJECT_ID(N'Temp.temp1_FactAccCardTopUp', N'U') IS NOT NULL DROP TABLE Temp.temp1_FactAccCardTopUp;
+IF OBJECT_ID(N'Temp.temp2_FactAccCardTopUp', N'U') IS NOT NULL DROP TABLE Temp.temp2_FactAccCardTopUp;
+IF OBJECT_ID(N'Temp.temp3_FactAccCardTopUp', N'U') IS NOT NULL DROP TABLE Temp.temp3_FactAccCardTopUp;
+IF OBJECT_ID(N'Temp.temp4_FactAccCardTopUp', N'U') IS NOT NULL DROP TABLE Temp.temp4_FactAccCardTopUp;
+IF OBJECT_ID(N'Temp.temp5_FactAccCardTopUp', N'U') IS NOT NULL DROP TABLE Temp.temp5_FactAccCardTopUp;
+IF OBJECT_ID(N'Temp.temp6_FactAccCardTopUp', N'U') IS NOT NULL DROP TABLE Temp.temp6_FactAccCardTopUp;
+
+-- FactAccTap
+IF OBJECT_ID(N'Temp.temp1_FactAccTap', N'U') IS NOT NULL DROP TABLE Temp.temp1_FactAccTap;
+IF OBJECT_ID(N'Temp.temp2_FactAccTap', N'U') IS NOT NULL DROP TABLE Temp.temp2_FactAccTap;
+IF OBJECT_ID(N'Temp.temp3_FactAccTap', N'U') IS NOT NULL DROP TABLE Temp.temp3_FactAccTap;
+IF OBJECT_ID(N'Temp.temp4_FactAccTap', N'U') IS NOT NULL DROP TABLE Temp.temp4_FactAccTap;
+IF OBJECT_ID(N'Temp.temp5_FactAccTap', N'U') IS NOT NULL DROP TABLE Temp.temp5_FactAccTap;
+IF OBJECT_ID(N'Temp.temp6_FactAccTap', N'U') IS NOT NULL DROP TABLE Temp.temp6_FactAccTap;
+
+-- FactAccTicketSale
+IF OBJECT_ID(N'Temp.temp1_FactAccTicketSale', N'U') IS NOT NULL DROP TABLE Temp.temp1_FactAccTicketSale;
+IF OBJECT_ID(N'Temp.temp2_FactAccTicketSale', N'U') IS NOT NULL DROP TABLE Temp.temp2_FactAccTicketSale;
+IF OBJECT_ID(N'Temp.temp3_FactAccTicketSale', N'U') IS NOT NULL DROP TABLE Temp.temp3_FactAccTicketSale;
+IF OBJECT_ID(N'Temp.temp4_FactAccTicketSale', N'U') IS NOT NULL DROP TABLE Temp.temp4_FactAccTicketSale;
+IF OBJECT_ID(N'Temp.temp5_FactAccTicketSale', N'U') IS NOT NULL DROP TABLE Temp.temp5_FactAccTicketSale;
+IF OBJECT_ID(N'Temp.temp6_FactAccTicketSale', N'U') IS NOT NULL DROP TABLE Temp.temp6_FactAccTicketSale;
 
 
---/*********************    DimEmployee Table    *********************/--
-
+/*********************    DimEmployee Temp Tables    *********************/
 CREATE TABLE Temp.temp1_DimEmployee (
 	EmpID_SK		INT,
     EmpID_BK        INT         , -- UNIQUE    -- business key from Employee.EmpID
@@ -97,6 +140,7 @@ CREATE TABLE Temp.temp3_DimEmployee (
 );
 
 
+/*********************    DimStation Temp Tables    *********************/
 CREATE TABLE Temp.temp1_DimStation(
     StationID_BK   INT          , -- UNIQUE
     StationName    NVARCHAR(150), -- 50 char more
@@ -109,6 +153,8 @@ CREATE TABLE Temp.temp1_DimStation(
     IsAccessible   VARCHAR(10) -- yes or no 
 );
 
+
+/*********************    DimRoute Temp Tables    *********************/
 CREATE TABLE [Temp].temp1_DimRoute
 (
     RouteID_BK    INT PRIMARY KEY,           -- business key
@@ -135,6 +181,8 @@ CREATE TABLE [Temp].temp2_DimRoute
     Status_FA     NVARCHAR(100)
 );
 
+
+/*********************    DimVehicle Temp Tables    *********************/
 CREATE TABLE [Temp].temp1_DimVehicle ( 
 	VehicleID_SK	INT,
 
@@ -161,7 +209,6 @@ CREATE TABLE [Temp].temp1_DimVehicle (
 	SCD_EndDate     DATE       ,
 	IsCurrent       BIT       
 );
-
 
 CREATE TABLE [Temp].temp2_DimVehicle ( 
 	VehicleID_SK	INT,
@@ -217,6 +264,8 @@ CREATE TABLE [Temp].temp3_DimVehicle (
 	IsCurrent       BIT       
 );
 
+
+/*********************    FactAccTap Temp Tables    *********************/
 CREATE TABLE [Temp].temp1_FactAccTap (
     StationKey        INT , --   NOT NULL REFERENCES DimStation(StationKey),
     RouteKey          INT , --  NOT NULL REFERENCES DimRoute(RouteKey),
@@ -248,14 +297,16 @@ CREATE TABLE [Temp].temp3_FactAccTap (
 );
 
 CREATE TABLE [Temp].temp4_FactAccTap 
-	(StationKey INT, RouteKey INT, PaymentMethodKey INT,TotalBoardings INT, TotalRevenue MONEY, MaxRevenue MONEY, MinRevenue MONEY);
+(StationKey INT, RouteKey INT, PaymentMethodKey INT,TotalBoardings INT, TotalRevenue MONEY, MaxRevenue MONEY, MinRevenue MONEY);
+
 CREATE TABLE [Temp].temp5_FactAccTap 
 	(StationKey INT, RouteKey INT, PaymentMethodKey INT,TotalBoardings INT, TotalRevenue MONEY, MaxRevenue MONEY, MinRevenue MONEY);
+
 CREATE TABLE [Temp].temp6_FactAccTap 
 	(StationKey INT, RouteKey INT, PaymentMethodKey INT,TotalBoardings INT, TotalRevenue MONEY, MaxRevenue MONEY, MinRevenue MONEY);
 
-/***************************************************************************************/
 
+/*********************    FactAccCardTopUp Temp Tables    *********************/
 CREATE TABLE [Temp].temp1_FactAccCardTopUp
 (
 	 StationKey     INT , --NULL REFERENCES DimStation(StationKey),
@@ -323,8 +374,8 @@ CREATE TABLE [Temp].temp6_FactAccCardTopUp
 	 TotalTopUps    INT   --NOT NULL
 );
 
-/***************************************************************************************/
 
+/*********************    FactAccTicketSale Temp Tables    *********************/
 CREATE TABLE [Temp].temp1_FactAccTicketSale
 (
 	StationKey       INT    , --NOT NULL REFERENCES DimStation(StationKey),

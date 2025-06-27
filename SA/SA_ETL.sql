@@ -1,5 +1,8 @@
-/*********************    Procedure to fill SA_LkpVehicleType    *********************/
+USE TransitSA
+GO
 
+
+/*********************    Procedure to fill SA_LkpVehicleType    *********************/
 CREATE OR ALTER PROCEDURE Fill_SA_LkpVehicleType
 AS
 BEGIN
@@ -31,12 +34,11 @@ BEGIN
         VALUES (N'Fill_SA_LkpVehicleType', SUSER_SNAME(), N'SA_LkpVehicleType', NULL, 'ERROR', ERROR_MESSAGE());
         THROW;
     END CATCH
-END;
+END
+GO
 
-GO;
 
 /*********************    Procedure to fill SA_LkpVehicleStatus    *********************/
-
 CREATE OR ALTER PROCEDURE Fill_SA_LkpVehicleStatus
 AS
 BEGIN
@@ -67,12 +69,11 @@ BEGIN
         VALUES (N'Fill_SA_LkpVehicleStatus', SUSER_SNAME(), N'SA_LkpVehicleStatus', NULL, 'ERROR', ERROR_MESSAGE());
         THROW;
     END CATCH
-END;
+END
+GO
 
-GO;
 
 /*********************    Procedure to fill SA_LkpRouteStatus    *********************/
-
 CREATE OR ALTER PROCEDURE Fill_SA_LkpRouteStatus
 AS
 BEGIN
@@ -105,12 +106,12 @@ BEGIN
         VALUES (N'Fill_SA_LkpRouteStatus', SUSER_SNAME(), N'SA_LkpRouteStatus', NULL, 'ERROR', ERROR_MESSAGE());
         THROW;
     END CATCH
-END;
+END
 
-GO;
+GO
+
 
 /*********************    Procedure to fill SA_LkpJourneyStatus    *********************/
-
 CREATE OR ALTER PROCEDURE Fill_SA_LkpJourneyStatus
 AS
 BEGIN
@@ -143,12 +144,12 @@ BEGIN
         VALUES (N'Fill_SA_LkpJourneyStatus', SUSER_SNAME(), N'SA_LkpJourneyStatus', NULL, 'ERROR', ERROR_MESSAGE());
         THROW;
     END CATCH
-END;
+END
 
-GO;
+GO
+
 
 /*********************    Procedure to fill SA_LkpDeviceType    *********************/
-
 CREATE OR ALTER PROCEDURE Fill_SA_LkpDeviceType
 AS
 BEGIN
@@ -180,12 +181,12 @@ BEGIN
         VALUES (N'Fill_SA_LkpDeviceType', SUSER_SNAME(), N'SA_LkpDeviceType', NULL, 'ERROR', ERROR_MESSAGE());
         THROW;
     END CATCH
-END;
+END
 
-GO;
+GO
+
 
 /*********************    Procedure to fill SA_LkpDeviceStatus    *********************/
-
 CREATE OR ALTER PROCEDURE Fill_SA_LkpDeviceStatus
 AS
 BEGIN
@@ -217,12 +218,12 @@ BEGIN
         VALUES (N'Fill_SA_LkpDeviceStatus', SUSER_SNAME(), N'SA_LkpDeviceStatus', NULL, 'ERROR', ERROR_MESSAGE());
         THROW;
     END CATCH
-END;
+END
 
-GO;
+GO
+
 
 /*********************    Procedure to fill SA_LkpCardType    *********************/
-
 CREATE OR ALTER PROCEDURE Fill_SA_LkpCardType
 AS
 BEGIN
@@ -254,11 +255,11 @@ BEGIN
         VALUES (N'Fill_SA_LkpCardType', SUSER_SNAME(), N'SA_LkpCardType', NULL, 'ERROR', ERROR_MESSAGE());
         THROW;
     END CATCH
-END;
-GO;
+END
+GO
+
 
 /*********************    Procedure to fill SA_LkpCardStatus    *********************/
-
 CREATE OR ALTER PROCEDURE Fill_SA_LkpCardStatus
 AS
 BEGIN
@@ -290,12 +291,11 @@ BEGIN
         VALUES (N'Fill_SA_LkpCardStatus', SUSER_SNAME(), N'SA_LkpCardStatus', NULL, 'ERROR', ERROR_MESSAGE());
         THROW;
     END CATCH
-END;
-GO;
+END
+GO
 
 
 /*********************    Procedure to fill SA_LkpPaymentMethod    *********************/
-
 CREATE OR ALTER PROCEDURE Fill_SA_LkpPaymentMethod
 AS
 BEGIN
@@ -328,11 +328,11 @@ BEGIN
         VALUES (N'Fill_SA_LkpPaymentMethod', SUSER_SNAME(), N'SA_LkpPaymentMethod', NULL, 'ERROR', ERROR_MESSAGE());
         THROW;
     END CATCH
-END;
-GO;
+END
+GO
+
 
 /*********************    Procedure to fill SA_LkpSalesChannel    *********************/
-
 CREATE OR ALTER PROCEDURE Fill_SA_LkpSalesChannel
 AS
 BEGIN
@@ -364,11 +364,11 @@ BEGIN
         VALUES (N'Fill_SA_LkpSalesChannel', SUSER_SNAME(), N'SA_LkpSalesChannel', NULL, 'ERROR', ERROR_MESSAGE());
         THROW;
     END CATCH
-END;
-GO;
+END
+GO
+
 
 /*********************    Procedure to fill SA_LkpMaintenanceType    *********************/
-
 CREATE OR ALTER PROCEDURE Fill_SA_LkpMaintenanceType
 AS
 BEGIN
@@ -399,11 +399,11 @@ BEGIN
         VALUES (N'Fill_SA_LkpMaintenanceType', SUSER_SNAME(), N'SA_LkpMaintenanceType', NULL, 'ERROR', ERROR_MESSAGE());
         THROW;
     END CATCH
-END;
-GO;
+END
+GO
+
 
 /*********************    Procedure to fill SA_LkpPartCategory    *********************/
-
 CREATE OR ALTER PROCEDURE Fill_SA_LkpPartCategory
 AS
 BEGIN
@@ -436,12 +436,11 @@ BEGIN
         VALUES (N'Fill_SA_LkpPartCategory', SUSER_SNAME(), N'SA_LkpPartCategory', NULL, 'ERROR', ERROR_MESSAGE());
         THROW;
     END CATCH
-END;
-GO;
+END
+GO
 
 
 /*********************    Procedure to fill SA_LkpRole    *********************/
-
 CREATE OR ALTER PROCEDURE Fill_SA_LkpRole
 AS
 BEGIN
@@ -474,11 +473,11 @@ BEGIN
         VALUES (N'Fill_SA_LkpRole', SUSER_SNAME(), N'SA_LkpRole', NULL, 'ERROR', ERROR_MESSAGE());
         THROW;
     END CATCH
-END;
-GO;
+END
+GO
+
 
 /*********************    Procedure to fill SA_LkpDepartment    *********************/
-
 CREATE OR ALTER PROCEDURE Fill_SA_LkpDepartment
 AS
 BEGIN
@@ -511,11 +510,11 @@ BEGIN
         VALUES (N'Fill_SA_LkpDepartment', SUSER_SNAME(), N'SA_LkpDepartment', NULL, 'ERROR', ERROR_MESSAGE());
         THROW;
     END CATCH
-END;
-GO;
+END
+GO
+
 
 /*********************    Procedure to fill SA_LkpShiftType    *********************/
-
 CREATE OR ALTER PROCEDURE Fill_SA_LkpShiftType
 AS
 BEGIN
@@ -549,11 +548,11 @@ BEGIN
         VALUES (N'Fill_SA_LkpShiftType', SUSER_SNAME(), N'SA_LkpShiftType', NULL, 'ERROR', ERROR_MESSAGE());
         THROW;
     END CATCH
-END;
-GO;
+END
+GO
+
 
 /*********************    Procedure to fill SA_LkpFuelType    *********************/
-
 CREATE OR ALTER PROCEDURE Fill_SA_LkpFuelType
 AS
 BEGIN
@@ -585,11 +584,11 @@ BEGIN
         VALUES (N'Fill_SA_LkpFuelType', SUSER_SNAME(), N'SA_LkpFuelType', NULL, 'ERROR', ERROR_MESSAGE());
         THROW;
     END CATCH
-END;
-go;
+END
+GO
+
 
 /*********************    Procedure to fill SA_Station    *********************/
-
 CREATE OR ALTER PROCEDURE Fill_SA_Station
 AS
 BEGIN
@@ -630,10 +629,11 @@ BEGIN
         VALUES (N'Fill_SA_Station', SUSER_SNAME(), N'SA_Station', NULL, 'ERROR', ERROR_MESSAGE());
         THROW;
     END CATCH
-END;
-go;
-/*********************    Procedure to fill SA_Route    *********************/
+END
+GO
 
+
+/*********************    Procedure to fill SA_Route    *********************/
 CREATE OR ALTER PROCEDURE Fill_SA_Route
 AS
 BEGIN
@@ -667,10 +667,11 @@ BEGIN
         VALUES (N'Fill_SA_Route', SUSER_SNAME(), N'SA_Route', NULL, 'ERROR', ERROR_MESSAGE());
         THROW;
     END CATCH
-END;
-go;
-/*********************    Procedure to fill SA_RouteStation *********************/
+END
+GO
 
+
+/*********************    Procedure to fill SA_RouteStation *********************/
 CREATE OR ALTER PROCEDURE Fill_SA_RouteStation
 AS
 BEGIN
@@ -701,11 +702,11 @@ BEGIN
         VALUES (N'Fill_SA_RouteStation', SUSER_SNAME(), N'SA_RouteStation', NULL, 'ERROR', ERROR_MESSAGE());
         THROW;
     END CATCH
-END;
-go;
+END
+GO
+
 
 /*********************    Procedure to fill SA_Vehicle *********************/
-
 CREATE OR ALTER PROCEDURE Fill_SA_Vehicle
 AS
 BEGIN
@@ -743,10 +744,11 @@ BEGIN
         VALUES (N'Fill_SA_Vehicle', SUSER_SNAME(), N'SA_Vehicle', NULL, 'ERROR', ERROR_MESSAGE());
         THROW;
     END CATCH
-END;
-go;
-/*********************    Procedure to fill SA_VehicleStatusHistory *********************/
+END
+GO
 
+
+/*********************    Procedure to fill SA_VehicleStatusHistory *********************/
 CREATE OR ALTER PROCEDURE Fill_SA_VehicleStatusHistory
 AS
 BEGIN
@@ -778,10 +780,11 @@ BEGIN
         VALUES (N'Fill_SA_VehicleStatusHistory', SUSER_SNAME(), N'SA_VehicleStatusHistory', NULL, 'ERROR', ERROR_MESSAGE());
         THROW;
     END CATCH
-END;
-go;
-/*********************    Procedure to fill SA_Journey *********************/
+END
+GO
 
+
+/*********************    Procedure to fill SA_Journey *********************/
 CREATE OR ALTER PROCEDURE Fill_SA_Journey
 AS
 BEGIN
@@ -821,10 +824,11 @@ BEGIN
         VALUES (N'Fill_SA_Journey', SUSER_SNAME(), N'SA_Journey', NULL, 'ERROR', ERROR_MESSAGE());
         THROW;
     END CATCH
-END;
-go;
-/*********************    Procedure to fill SA_JourneyStatusEvent *********************/
+END
+GO
 
+
+/*********************    Procedure to fill SA_JourneyStatusEvent *********************/
 CREATE OR ALTER PROCEDURE Fill_SA_JourneyStatusEvent -- with while we should do it 
 AS
 BEGIN
@@ -857,10 +861,11 @@ BEGIN
         VALUES (N'Fill_SA_JourneyStatusEvent', SUSER_SNAME(), N'SA_JourneyStatusEvent', NULL, 'ERROR', ERROR_MESSAGE());
         THROW;
     END CATCH
-END;
-go;
-/*********************    Procedure to fill SA_ArrivalEvent *********************/
+END
+GO
 
+
+/*********************    Procedure to fill SA_ArrivalEvent *********************/
 CREATE OR ALTER PROCEDURE Fill_SA_ArrivalEvent
 AS
 BEGIN
@@ -914,10 +919,11 @@ BEGIN
 		SET @curr_date = DATEADD(DAY, 1, @curr_date);
 	END
 
-END;
-go;
-/*********************    Procedure to fill SA_PaymentDevice *********************/
+END
+GO
 
+
+/*********************    Procedure to fill SA_PaymentDevice *********************/
 CREATE OR ALTER PROCEDURE Fill_SA_PaymentDevice
 AS
 BEGIN
@@ -956,10 +962,11 @@ BEGIN
         VALUES (N'Fill_SA_PaymentDevice', SUSER_SNAME(), N'SA_PaymentDevice', NULL, 'ERROR', ERROR_MESSAGE());
         THROW;
     END CATCH
-END;
-go;
-/*********************    Procedure to fill SA_DeviceAssignment *********************/
+END
+GO
 
+
+/*********************    Procedure to fill SA_DeviceAssignment *********************/
 CREATE OR ALTER PROCEDURE Fill_SA_DeviceAssignment
 AS
 BEGIN
@@ -993,10 +1000,11 @@ BEGIN
         VALUES (N'Fill_SA_DeviceAssignment', SUSER_SNAME(), N'SA_DeviceAssignment', NULL, 'ERROR', ERROR_MESSAGE());
         THROW;
     END CATCH
-END;
-go;
-/*********************    Procedure to fill SA_PaymentTxn *********************/
+END
+GO
 
+
+/*********************    Procedure to fill SA_PaymentTxn *********************/
 CREATE OR ALTER PROCEDURE Fill_SA_PaymentTxn
 AS
 BEGIN
@@ -1047,10 +1055,11 @@ BEGIN
 		SET @curr_date = DATEADD(DAY, 1, @curr_date);
 	END 
 
-END;
-go;
-/*********************    Procedure to fill SA_Card *********************/
+END
+GO
 
+
+/*********************    Procedure to fill SA_Card *********************/
 CREATE OR ALTER PROCEDURE Fill_SA_Card
 AS
 BEGIN
@@ -1091,10 +1100,11 @@ BEGIN
         VALUES (N'Fill_SA_Card', SUSER_SNAME(), N'SA_Card', NULL, 'ERROR', ERROR_MESSAGE());
         THROW;
     END CATCH
-END;
-go;
-/*********************    Procedure to fill SA_CardTopUpTxn *********************/
+END
+GO
 
+
+/*********************    Procedure to fill SA_CardTopUpTxn *********************/
 CREATE OR ALTER PROCEDURE Fill_SA_CardTopUpTxn
 AS
 BEGIN
@@ -1144,10 +1154,11 @@ BEGIN
 	SET @curr_date = DATEADD(DAY, 1, @curr_date);
 	END
 
-END;
-go;
-/*********************    Procedure to fill SA_Ticket *********************/
+END
+GO
 
+
+/*********************    Procedure to fill SA_Ticket *********************/
 CREATE OR ALTER PROCEDURE Fill_SA_Ticket
 AS
 BEGIN
@@ -1183,10 +1194,11 @@ BEGIN
         VALUES (N'Fill_SA_Ticket', SUSER_SNAME(), N'SA_Ticket', NULL, 'ERROR', ERROR_MESSAGE());
         THROW;
     END CATCH
-END;
-go;
-/*********************    Procedure to fill SA_TicketSaleTxn *********************/
+END
+GO
 
+
+/*********************    Procedure to fill SA_TicketSaleTxn *********************/
 CREATE OR ALTER PROCEDURE Fill_SA_TicketSaleTxn
 AS
 BEGIN
@@ -1221,10 +1233,11 @@ BEGIN
         VALUES (N'Fill_SA_TicketSaleTxn', SUSER_SNAME(), N'SA_TicketSaleTxn', NULL, 'ERROR', ERROR_MESSAGE());
         THROW;
     END CATCH
-END;
-go;
-/*********************    Procedure to fill SA_Part *********************/
+END
+GO
 
+
+/*********************    Procedure to fill SA_Part *********************/
 CREATE OR ALTER PROCEDURE Fill_SA_Part
 AS
 BEGIN
@@ -1257,10 +1270,11 @@ BEGIN
         VALUES (N'Fill_SA_Part', SUSER_SNAME(), N'SA_Part', NULL, 'ERROR', ERROR_MESSAGE());
         THROW;
     END CATCH
-END;
-go;
-/*********************    Procedure to fill SA_Supplier *********************/
+END
+GO
 
+
+/*********************    Procedure to fill SA_Supplier *********************/
 CREATE OR ALTER PROCEDURE Fill_SA_Supplier
 AS
 BEGIN
@@ -1302,10 +1316,11 @@ BEGIN
         VALUES (N'Fill_SA_Supplier', SUSER_SNAME(), N'SA_Supplier', NULL, 'ERROR', ERROR_MESSAGE());
         THROW;
     END CATCH
-END;
-go;
-/*********************    Procedure to fill SA_MaintenanceWorkOrder *********************/
+END
+GO
 
+
+/*********************    Procedure to fill SA_MaintenanceWorkOrder *********************/
 CREATE OR ALTER PROCEDURE Fill_SA_MaintenanceWorkOrder
 AS
 BEGIN
@@ -1348,11 +1363,11 @@ BEGIN
         VALUES (N'Fill_SA_MaintenanceWorkOrder', SUSER_SNAME(), N'SA_MaintenanceWorkOrder', NULL, 'ERROR', ERROR_MESSAGE());
         THROW;
     END CATCH
-END;
-go;
+END
+GO
+
 
 /*********************    Procedure to fill SA_WorkOrderPartReplacement *********************/
-
 CREATE OR ALTER PROCEDURE Fill_SA_WorkOrderPartReplacement
 AS
 BEGIN
@@ -1385,11 +1400,11 @@ BEGIN
         VALUES (N'Fill_SA_WorkOrderPartReplacement', SUSER_SNAME(), N'SA_WorkOrderPartReplacement', NULL, 'ERROR', ERROR_MESSAGE());
         THROW;
     END CATCH
-END;
-go;
+END
+GO
+
 
 /*********************    Procedure to fill SA_FuelingEvent *********************/
-
 CREATE OR ALTER PROCEDURE Fill_SA_FuelingEvent
 AS
 BEGIN
@@ -1423,10 +1438,11 @@ BEGIN
         VALUES (N'Fill_SA_FuelingEvent', SUSER_SNAME(), N'SA_FuelingEvent', NULL, 'ERROR', ERROR_MESSAGE());
         THROW;
     END CATCH
-END;
-GO;
-/*********************    Procedure to fill SA_Employee *********************/
+END
+GO
 
+
+/*********************    Procedure to fill SA_Employee *********************/
 CREATE OR ALTER PROCEDURE Fill_SA_Employee
 AS
 BEGIN
@@ -1472,11 +1488,11 @@ BEGIN
         VALUES (N'Fill_SA_Employee', SUSER_SNAME(), N'SA_Employee', NULL, 'ERROR', ERROR_MESSAGE());
         THROW;
     END CATCH
-END;
-go;
+END
+GO
+
 
 /*********************    Procedure to fill SA_EmployeeRoleHistory *********************/
-
 CREATE OR ALTER PROCEDURE Fill_SA_EmployeeRoleHistory
 AS
 BEGIN
@@ -1508,11 +1524,11 @@ BEGIN
         VALUES (N'Fill_SA_EmployeeRoleHistory', SUSER_SNAME(), N'SA_EmployeeRoleHistory', NULL, 'ERROR', ERROR_MESSAGE());
         THROW;
     END CATCH
-END;
-go;
+END
+GO
+
 
 /*********************    Procedure to fill SA_Shift *********************/
-
 CREATE OR ALTER PROCEDURE Fill_SA_Shift
 AS
 BEGIN
@@ -1547,11 +1563,11 @@ BEGIN
         VALUES (N'Fill_SA_Shift', SUSER_SNAME(), N'SA_Shift', NULL, 'ERROR', ERROR_MESSAGE());
         THROW;
     END CATCH
-END;
-go;
+END
+GO
+
 
 /*********************    Procedure to fill SA_PayrollTxn *********************/
-
 CREATE OR ALTER PROCEDURE Fill_SA_PayrollTxn
 AS
 BEGIN
@@ -1586,5 +1602,5 @@ BEGIN
         VALUES (N'Fill_SA_PayrollTxn', SUSER_SNAME(), N'SA_PayrollTxn', NULL, 'ERROR', ERROR_MESSAGE());
         THROW;
     END CATCH
-END;
-go;
+END
+GO

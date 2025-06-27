@@ -1,23 +1,24 @@
-﻿Use TransitDW;
+﻿Use TransitDW
 
-go
+GO
+
 -- CREATE SCHEMA [Global];
 
-
-IF OBJECT_ID('[Global].[DimDate]', 'U') IS NOT NULL DROP TABLE [Global].[DimDate];
-IF OBJECT_ID('[Global].DimTime', 'U') IS NOT NULL DROP TABLE [Global].DimTime;
-IF OBJECT_ID('[Global].DimStation', 'U') IS NOT NULL DROP TABLE [Global].DimStation;
-IF OBJECT_ID('[Global].DimRoute', 'U') IS NOT NULL DROP TABLE [Global].DimRoute;
-IF OBJECT_ID('[Global].DimVehicle', 'U') IS NOT NULL DROP TABLE [Global].DimVehicle;
-IF OBJECT_ID('[Global].DimVehicleStatus', 'U') IS NOT NULL DROP TABLE [Global].DimVehicleStatus;
-IF OBJECT_ID('[Global].DimEmployee', 'U') IS NOT NULL DROP TABLE [Global].DimEmployee;
-IF OBJECT_ID('[Global].DimPaymentMethod', 'U') IS NOT NULL DROP TABLE [Global].DimPaymentMethod;
+IF NOT EXISTS (SELECT 1 FROM sys.schemas WHERE name = N'Global')
+    EXEC (N'CREATE SCHEMA [Global]');
+GO
 
 
 
-
-
-
+IF OBJECT_ID('[Global].[DimDate]', 'U')			IS NOT NULL DROP TABLE [Global].[DimDate];
+IF OBJECT_ID('[Global].DimTime', 'U')			IS NOT NULL DROP TABLE [Global].DimTime;
+IF OBJECT_ID('[Global].DimStation', 'U')		IS NOT NULL DROP TABLE [Global].DimStation;
+IF OBJECT_ID('[Global].DimRoute', 'U')			IS NOT NULL DROP TABLE [Global].DimRoute;
+IF OBJECT_ID('[Global].DimVehicle', 'U')		IS NOT NULL DROP TABLE [Global].DimVehicle;
+IF OBJECT_ID('[Global].DimVehicleStatus', 'U')	IS NOT NULL DROP TABLE [Global].DimVehicleStatus;
+IF OBJECT_ID('[Global].DimEmployee', 'U')		IS NOT NULL DROP TABLE [Global].DimEmployee;
+IF OBJECT_ID('[Global].DimPaymentMethod', 'U')	IS NOT NULL DROP TABLE [Global].DimPaymentMethod;
+IF OBJECT_ID('[Global].[Log]', 'U')				IS NOT NULL DROP TABLE [Global].[Log];
 
 
 /*===============================================================================
@@ -27,8 +28,7 @@ IF OBJECT_ID('[Global].DimPaymentMethod', 'U') IS NOT NULL DROP TABLE [Global].D
 
 
 
---/*********************    DimDate Table    *********************/--
-
+/*********************    DimDate Table    *********************/
 Go
 SET ANSI_NULLS ON
 GO
@@ -38,7 +38,6 @@ GO
 
 SET ANSI_PADDING ON
 GO
-
 
 
 CREATE TABLE [Global].[DimDate](
@@ -96,8 +95,7 @@ CREATE TABLE [Global].[DimDate](
 
 
 
---/*********************    DimTime Table    *********************/--
-
+/*********************    DimTime Table    *********************/
 CREATE TABLE [Global].DimTime (          -- grain = minute
     TimeKey         SMALLINT   ,-- 1420
     HourNo          TINYINT    ,
@@ -107,8 +105,7 @@ CREATE TABLE [Global].DimTime (          -- grain = minute
 );
 
 
---/*********************    DimStation Table    *********************/--
-
+/*********************    DimStation Table    *********************/
 CREATE TABLE [Global].DimStation (
     StationID_BK   INT           , -- UNIQUE
     StationName    NVARCHAR(150) , -- 50 char more
@@ -122,10 +119,7 @@ CREATE TABLE [Global].DimStation (
 );
 
 
-
---/*********************    DimRoute Table    *********************/--
-
-
+/*********************    DimRoute Table    *********************/
 CREATE TABLE [Global].DimRoute (
     RouteID_BK     INT         , -- UNIQUE
     RouteCode      VARCHAR(15), -- 5 char more
@@ -138,8 +132,8 @@ CREATE TABLE [Global].DimRoute (
     Status_FA      NVARCHAR(100)
 );
 
---/*********************    DimVehicle Table    *********************/--
 
+/*********************    DimVehicle Table    *********************/
 CREATE TABLE [Global].DimVehicle ( 
 	VehicleID_SK    INT         ,
     VehicleID_BK    INT         , -- UNIQUE
@@ -166,9 +160,7 @@ CREATE TABLE [Global].DimVehicle (
 );
 
 
---/*********************    DimVehicleStatus Table    *********************/--
-
-
+/*********************    DimVehicleStatus Table    *********************/
 CREATE TABLE [Global].DimVehicleStatus (
     VehicleStatusIDـBK  INT , -- UNIQUE,       -- business key from LkpVehicleStatus
     StatusCode          VARCHAR(50)  ,
@@ -177,8 +169,7 @@ CREATE TABLE [Global].DimVehicleStatus (
 );
 
 
---/*********************    DimEmployee Table    *********************/--
-
+/*********************    DimEmployee Table    *********************/
 CREATE TABLE [Global].DimEmployee (
 	EmpID_SK            INT,
     EmpID_BK            INT, -- UNIQUE    -- business key from Employee.EmpID
@@ -203,16 +194,13 @@ CREATE TABLE [Global].DimEmployee (
     RoleCode            VARCHAR(50)   ,
     Role_EN             VARCHAR(100)   ,
     Role_FA             NVARCHAR(100)  ,
-    
     SCD_StartDate       DATE          ,
     SCD_EndDate         DATE          ,
     IsCurrent           BIT      
 );
 
 
-
---/*********************    DimPaymentMethod Table    *********************/--
-
+/*********************    DimPaymentMethod Table    *********************/
 CREATE TABLE [Global].DimPaymentMethod (
     PaymentMethodID_BK  INT        , -- UNIQUE
     MethodCode          VARCHAR(50),
@@ -221,11 +209,7 @@ CREATE TABLE [Global].DimPaymentMethod (
 );
 
 
-
-
---/*********************    Log Table    *********************/--
-
-
+/*********************    Log Table    *********************/
 CREATE TABLE [Global].[Log] (
     LogID               BIGINT       IDENTITY,    
         -- Surrogate key for easy reference and clustering
@@ -257,6 +241,3 @@ CREATE TABLE [Global].[Log] (
         CHECK (SeverityLevel IN ('DEBUG','INFO','WARN','ERROR','FATAL'))
         -- Restrict to known levels
 );
-
-
-

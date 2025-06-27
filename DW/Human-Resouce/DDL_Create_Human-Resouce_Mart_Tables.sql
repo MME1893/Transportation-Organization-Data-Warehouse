@@ -1,7 +1,13 @@
-﻿Use TransitDW;
+﻿Use TransitDW
 
-go
- CREATE SCHEMA [Human-Resouce];
+GO
+
+ --CREATE SCHEMA [Human-Resouce];
+
+IF NOT EXISTS (SELECT 1 FROM sys.schemas WHERE name = N'Human-Resouce')
+    EXEC (N'CREATE SCHEMA [Human-Resouce]');
+GO
+
 
 
 IF OBJECT_ID('[Human-Resouce].[DimShiftType]', 'U') IS NOT NULL DROP TABLE [Human-Resouce].[DimShiftType];
@@ -22,9 +28,7 @@ IF OBJECT_ID('[Human-Resouce].[FactMonthlyPayroll]', 'U') IS NOT NULL DROP TABLE
 
 
 
-/*********************    DimShiftType Table    *********************/--
-
-
+/*********************    DimShiftType Table    *********************/
 CREATE TABLE [Human-Resouce].DimShiftType (
     ShiftTypeID_BK INT			, -- NOT NULL UNIQUE,
     ShiftCode     VARCHAR(50)	,
@@ -41,7 +45,6 @@ CREATE TABLE [Human-Resouce].DimShiftType (
 
 
 /*********************    FactTrnsShift Table    *********************/--
-
 CREATE TABLE [Human-Resouce].FactTrnsShift (            -- transactional
     EmployeeKey   INT		, -- NOT NULL REFERENCES DimEmployee(EmployeeKey),
     DateKey       INT		, -- NOT NULL REFERENCES DimDate(DateKey),  -- shift start date
@@ -55,9 +58,7 @@ CREATE TABLE [Human-Resouce].FactTrnsShift (            -- transactional
 
 
 
-/*********************    FactAccTap Table    *********************/--
-
-
+/*********************    FactAccTap Table    *********************/
 CREATE TABLE [Human-Resouce].FactMonthlyPayroll (          -- monthly snapshot
     EmployeeKey   INT	, -- NOT NULL REFERENCES DimEmployee(EmployeeKey),
     DateKey		  INT	, -- NOT NULL REFERENCES DimDate(time_Key_Year_Month),  -- e.g., first day of month
@@ -66,4 +67,3 @@ CREATE TABLE [Human-Resouce].FactMonthlyPayroll (          -- monthly snapshot
     TaxAmount     MONEY , -- NOT NULL,
     InsuranceAmt  MONEY	  -- NOT NULL
 );
-
