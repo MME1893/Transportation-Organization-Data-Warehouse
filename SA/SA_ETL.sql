@@ -919,7 +919,7 @@ BEGIN
          @Description   = N'Starting population of SA_RouteStation table.',
          @ProcedureName = N'Fill_SA_RouteStation';
 
-    TRUNCATE TABLE SA_Route;
+    TRUNCATE TABLE SA_RouteStation;
 
     BEGIN TRY
         -- Data Transformation/Cleansing (Example: Handle empty fields and format RouteCode properly)

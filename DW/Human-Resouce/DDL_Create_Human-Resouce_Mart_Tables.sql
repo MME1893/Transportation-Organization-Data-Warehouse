@@ -52,8 +52,8 @@ CREATE TABLE [Human-Resouce].FactTrnsShift (            -- transactional
     StartTimeKey  SMALLINT	, -- REFERENCES DimTime(TimeKey),
     EndTimeKey    SMALLINT	, -- REFERENCES DimTime(TimeKey),
     HoursWorked   DECIMAL(6,2)	,
-    OvertimeHours DECIMAL(6,2)	,
-    ShiftAllowance MONEY
+    OvertimeHours DECIMAL(6,2)
+   -- ShiftAllowance MONEY
 );
 
 
@@ -66,4 +66,14 @@ CREATE TABLE [Human-Resouce].FactMonthlyPayroll (          -- monthly snapshot
     NetPay        MONEY , -- NOT NULL,
     TaxAmount     MONEY , -- NOT NULL,
     InsuranceAmt  MONEY	  -- NOT NULL
+);
+
+
+
+CREATE TABLE [Human-Resouce].FactMonthlyshift (          -- monthly snapshot
+    EmployeeKey   INT ,
+    DateKey INT ,  -- e.g., first 
+    totalHoursWorked   DECIMAL(6,2),
+    totalOvertimeHours DECIMAL(6,2),
+    totaldayworked DECIMAL(6,2),
 );

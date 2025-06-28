@@ -103,10 +103,12 @@ CREATE TABLE [Maintence].FactMaintenanceDetail (
 
 	WorkOrderID_BK    BIGINT    , -- NOT NULL,    -- Business/natural key for work order (from source)
 	PartKey           INT       , -- NOT NULL,    -- Foreign key to DimPart
-	SupplierKry    INT        , -- NOT NULL , -- Foreign key to DimSupplie
+	SupplierKry    INT       default -1 , -- NOT NULL , -- Foreign key to DimSupplie
 	-- Additional dimension keys for star joins
 	OpenDateKey       INT       , -- NOT NULL REFERENCES DimDate(DateKey),
-	CloseDateKey      INT       , -- NOT NULL REFERENCES DimDate(DateKey),
+	CloseDateKey      INT    default -1, -- NOT NULL REFERENCES DimDate(DateKey),
+	OpentimeKey		INT,
+	ClosetimeKey	INT default -1,
 	VehicleKey        INT       , -- NOT NULL REFERENCES DimVehicle(VehicleKey),
 	MaintTypeKey      INT       , -- NOT NULL REFERENCES DimMaintenanceType(MaintTypeKey),
 	MechanicKey       INT       , -- NOT NULL REFERENCES DimEmployee(EmployeeKey),
@@ -115,7 +117,7 @@ CREATE TABLE [Maintence].FactMaintenanceDetail (
 	DowntimeHours     DECIMAL(8,2) , -- NULL,     -- Total downtime for this work order
 	LaborHours        DECIMAL(8,2) , -- NULL,     -- Total labor hours for this work order
 	TotalWOCost       MONEY        , -- NULL,     -- Total cost for this work order (header-level)
-	Quantity          SMALLINT     , -- NOT NULL DEFAULT 0,  -- Quantity of part (0 if “no part”)
+	Quantity          SMALLINT     DEFAULT 0, -- NOT NULL DEFAULT 0,  -- Quantity of part (0 if “no part”)
 	PartCost          MONEY          -- NULL,                -- Cost for this part (NULL/0 if “no part”)
 
 	-- Composite primary key
@@ -130,7 +132,7 @@ CREATE TABLE [Maintence].FactMonthlyMaintenanceWO (
 
     /* Measures aggregated DISTINCT by WorkOrderID_BK */
     WorkOrdersCnt   INT           , -- NOT NULL,           -- DISTINCT WOs in month
-    DowntimeHours   DECIMAL(10,2) , -- NOT NULL DEFAULT 0,
+  --  DowntimeHours   DECIMAL(10,2) , -- NOT NULL DEFAULT 0,
     LaborHours      DECIMAL(10,2) , -- NOT NULL DEFAULT 0,
     PartsQty        INT           , -- NOT NULL DEFAULT 0,   -- total Quantity from parts
     PartsCost       MONEY         , -- NOT NULL DEFAULT 0,
@@ -144,7 +146,7 @@ CREATE TABLE [Maintence].FactAccMaintenanceWO (
     VehicleKey      INT           , -- NOT NULL REFERENCES DimVehicle(VehicleKey),
 
     WorkOrdersCnt   INT			  , -- NOT NULL,
-    DowntimeHours   DECIMAL(12,2) , -- NOT NULL DEFAULT 0,
+   -- DowntimeHours   DECIMAL(12,2) , -- NOT NULL DEFAULT 0,
     LaborHours      DECIMAL(12,2) , -- NOT NULL DEFAULT 0,
     AvgLaborHours   DECIMAL(10,2) , -- NOT NULL DEFAULT 0,
     PartsQty        INT           , -- NOT NULL DEFAULT 0,
@@ -183,7 +185,7 @@ CREATE TABLE [Maintence].FactAccFueling (
 
     VehicleKey        INT            , -- NOT NULL  REFERENCES DimVehicle(VehicleKey),
 
-    FuelTypeKey       INT            , -- NOT NULL  REFERENCES DimFuelType(FuelTypeKey),
+    -- FuelTypeKey       INT            , -- NOT NULL  REFERENCES DimFuelType(FuelTypeKey),
 
     -- Aggregated measures (all-time or YTD, as defined in your ETL)
     FuelEventsCount   INT            , -- NOT NULL DEFAULT 0,        -- # fueling events
