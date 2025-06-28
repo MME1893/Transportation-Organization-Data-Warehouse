@@ -14,6 +14,8 @@ IF OBJECT_ID('[Transport].[FactAccTap]', 'U') IS NOT NULL				DROP TABLE [Transpo
 IF OBJECT_ID('[Transport].[FactTrnsArrival]', 'U') IS NOT NULL			DROP TABLE [Transport].[FactTrnsArrival];
 IF OBJECT_ID('[Transport].[FactAccJourney]', 'U') IS NOT NULL			DROP TABLE [Transport].[FactAccJourney];
 IF OBJECT_ID('[Transport].[FactDailyVehicleStatus]', 'U') IS NOT NULL	DROP TABLE [Transport].[FactDailyVehicleStatus];
+IF OBJECT_ID('[Transport].TimeAccFactTap', 'U') IS NOT NULL	DROP TABLE [Transport].TimeAccFactTap;
+
 
 
 
@@ -166,8 +168,18 @@ CREATE TABLE [Transport].FactAccJourney (
 CREATE TABLE [Transport].FactDailyVehicleStatus (   -- daily snapshot
     DateKey			INT  ,	-- NOT NULL REFERENCES DimDate(DateKey),
     VehicleKey		INT  ,	-- NOT NULL REFERENCES DimVehicle(VehicleKey),
-	StatusKey		INT  ,	-- NOT NULL REFERENCES DimVehicleStatus(VehicleStatusKey),
+	--StatusKey		INT  ,	-- NOT NULL REFERENCES DimVehicleStatus(VehicleStatusKey),
     --KMRunToday		INT, -- i doubt if we really need this field ... 
     ActiveHours		DECIMAL(6,2),
     TotalPassengers INT
 );
+
+
+/*********************    FactlessRouteStation Table    *********************/
+
+CREATE TABLE [Transport].FactlessRouteStation
+(
+	RouteKey INT,
+	StationKey INT,
+	SeqNo         SMALLINT
+)

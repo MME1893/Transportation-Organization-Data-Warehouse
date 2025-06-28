@@ -266,7 +266,7 @@ AS
 			WHERE  txn.TopUpDT < CAST( (DATEADD(DAY,1,@current_date)) AS DATETIME) AND txn.TopUpDT >= CAST( @current_date AS DATETIME )
 			SET @rows = @@ROWCOUNT;
 			SET @desc = N'Inserted ' + CAST(@rows AS NVARCHAR(20))
-						+ N' rows in date ' + @current_date 
+						+ N' rows in date ' + CONVERT(NVARCHAR(9),@current_date, 112)  
 						+ N' ).';
 			EXEC [Global].LogAction
 					@TableName     = N'FactTrnsCardTopUp',
@@ -335,6 +335,21 @@ AS
 			RETURN;
 		END
 
+		TRUNCATE TABLE Temp.temp1_cross_Station_SalesChannel_CardType;
+		INSERT INTO Temp.temp1_cross_Station_SalesChannel_CardType
+		(
+			StationKey, SalesChannelKey, CardTypeKey
+		)
+		SELECT 
+			s.StationID_BK, sc.SalesChannelID_BK, c.CardTypeID_BK
+		FROM 
+			Global.DimStation s
+		CROSS JOIN 
+			Financial.DimSalesChannel sc
+		CROSS JOIN 
+			Financial.DimCardType c
+
+
 		WHILE @current_date <= @end_date
 
 		BEGIN 
@@ -349,20 +364,25 @@ AS
 				TotalTopUps
 			)
 			SELECT 
-					F.DateKey,
-					F.StationKey,
-					F.SalesChannelKey,
-					F.CardTypeKey,
-					COUNT(*) AS TotalTopUpAmt,
-					SUM(F.Amount) AS TotalTopUps
+					CONVERT(INT, CONVERT(VARCHAR(8), @current_date, 112)) AS DateKey,
+					T.StationKey,
+					T.SalesChannelKey,
+					T.CardTypeKey,
+					SUM  ( CASE WHEN P.StationKey IS NOT NULL THEN P.Amount ELSE 0 END )  AS TotalTopUpAmt,
+					COUNT( CASE WHEN P.StationKey IS NOT NULL THEN 1 END ) AS TotalTopUps
 			FROM 
-				[Financial].FactTrnsCardTopUp f
-			WHERE F.DateKey = CONVERT(INT, CONVERT(VARCHAR(8),@current_date,112))
+				Temp.temp1_cross_Station_SalesChannel_CardType AS T
+			LEFT JOIN
+				[Financial].FactTrnsCardTopUp AS p
+				ON 
+					P.StationKey = T.StationKey AND
+					P.CardTypeKey = T.CardTypeKey AND
+					P.SalesChannelKey = T.SalesChannelKey AND
+					P.DateKey = CONVERT(INT, CONVERT(VARCHAR(8), @current_date, 112))
 			GROUP BY 
-					F.DateKey,
-					F.StationKey,
-					F.SalesChannelKey,
-					F.CardTypeKey
+					T.StationKey,
+					T.SalesChannelKey,
+					T.CardTypeKey
 				
 			SET @rows = @@ROWCOUNT;
 				SET @desc = N'Inserted ' + CAST(@rows AS NVARCHAR(20))
@@ -433,10 +453,11 @@ AS
 		/*-------------------------------------------------------------*/
 		/* 1-B. House-keeping (truncate scratch & bookmark tables)      */
 		/*-------------------------------------------------------------*/
-			TRUNCATE TABLE [Financial].TimeFactAccCardTopUp;   -- bookmark
-			TRUNCATE TABLE [Temp].temp4_FactAccCardTopUp;      -- running total
-			TRUNCATE TABLE [Temp].temp5_FactAccCardTopUp;      -- “yesterday”
-			TRUNCATE TABLE [Temp].temp6_FactAccCardTopUp;      -- “today”
+		TRUNCATE TABLE [Financial].FactAccCardTopUp;
+		TRUNCATE TABLE [Financial].TimeFactAccCardTopUp;   -- bookmark
+		TRUNCATE TABLE [Temp].temp4_FactAccCardTopUp;      -- running total
+		TRUNCATE TABLE [Temp].temp5_FactAccCardTopUp;      -- “yesterday”
+		TRUNCATE TABLE [Temp].temp6_FactAccCardTopUp;      -- “today”
 
 		WHILE @current_date <= @end_date
 		BEGIN
@@ -527,7 +548,7 @@ AS
 				   TotalTopUpAmt, MaxTopUpAmt, AvgTopUpAmt, TotalTopUps
 			FROM   [Temp].temp4_FactAccCardTopUp;
 
-			TRUNCATE TABLE [Financial].TimeAccFactCardTopUp;
+			TRUNCATE TABLE [Financial].TimeFactAccCardTopUp;   -- bookmark
 
 			INSERT INTO [Financial].TimeFactAccCardTopUp ([Date])
 			VALUES ( @end_date );
@@ -691,6 +712,17 @@ AS
 			RETURN;
 		END
 
+		TRUNCATE TABLE Temp.temp1_cross_Station_SalesChannel;
+		INSERT INTO Temp.temp1_cross_Station_SalesChannel
+		( StationKey , SalesChannelKey) 
+		SELECT S.StationID_BK, SC.SalesChannelID_BK
+		FROM 
+			Global.DimStation s
+		CROSS JOIN 
+			Financial.DimSalesChannel sc
+
+			
+
 		WHILE @current_date <= @end_date
 
 		BEGIN 
@@ -704,18 +736,23 @@ AS
 				TotalRevenue
 			)
 			SELECT 
-					F.DateKey,
-					F.StationKey,
-					F.SalesChannelKey,
-					COUNT(*) AS TotalTopUpAmt,
-					SUM(F.TicketRevenue) AS TotalRevenue
+					CONVERT(INT, CONVERT(VARCHAR(8), @current_date, 112)) AS DateKey,
+					T.StationKey,
+					T.SalesChannelKey,
+					COUNT(CASE WHEN TS.StationKey IS NOT NULL THEN 1 END) AS TotalTicketsSold,
+					SUM(CASE WHEN TS.StationKey IS NOT NULL THEN TS.TicketRevenue ELSE 0 END) AS TotalRevenue
 			FROM 
-				[Financial].FactTrnsTicketSale f
-			WHERE F.DateKey = CONVERT(INT, CONVERT(VARCHAR(8),@current_date,112))
-			GROUP BY 
-					F.DateKey,
-					F.StationKey,
-					F.SalesChannelKey
+				Temp.temp1_cross_Station_SalesChannel AS T
+			LEFT JOIN 
+				[Financial].FactTrnsTicketSale AS TS
+				ON 
+					T.StationKey =TS.StationKey AND
+					T.SalesChannelKey = TS.SalesChannelKey AND
+				    TS.DateKey = CONVERT(INT, CONVERT(VARCHAR(8), @current_date, 112))
+				GROUP BY
+					T.StationKey,
+					T.SalesChannelKey
+				
 				
 				
 			SET @rows = @@ROWCOUNT;

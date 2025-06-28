@@ -1,14 +1,15 @@
-USE TransitSA
-GO
-
-
 /*********************    Procedure to fill SA_LkpVehicleType    *********************/
+
 CREATE OR ALTER PROCEDURE Fill_SA_LkpVehicleType
 AS
 BEGIN
     -- Logging Procedure Start
-    INSERT INTO [TransitDW].[Global].[Log] (ProcedureName, ExecutedBy, TableName, RowsAffected, SeverityLevel, Description)
-    VALUES (N'Fill_SA_LkpVehicleType', SUSER_SNAME(), N'SA_LkpVehicleType', NULL, 'INFO', N'Starting population of SA_LkpVehicleType table.');
+	EXEC [TransitDW].[Global].LogAction
+		 @TableName     = N'SA_LkpVehicleType'
+	   , @RowsAffected  = 0 -- NULL converted to zero
+	   , @SeverityLevel = 'INFO'
+	   , @Description   = N'Starting population of SA_LkpVehicleType table.'
+	   , @ProcedureName = N'Fill_SA_LkpVehicleType';
 
 	Truncate table SA_LkpVehicleType;
 
@@ -21,30 +22,46 @@ BEGIN
             LTRIM(RTRIM(TypeCode)) AS TypeCode,  -- Cleansing: Remove leading and trailing spaces
             Label_EN, 
             Label_FA
-        FROM [Lookup].LkpVehicleType
+        FROM [Transit].[Lookup].LkpVehicleType
         WHERE TypeCode IS NOT NULL AND TypeCode != '';  -- Cleansing: Only non-null and non-empty TypeCode values
 
         -- Logging Procedure End
-        INSERT INTO [TransitDW].[Global].[Log] (ProcedureName, ExecutedBy, TableName, RowsAffected, SeverityLevel, Description)
-        VALUES (N'Fill_SA_LkpVehicleType', SUSER_SNAME(), N'SA_LkpVehicleType', @@ROWCOUNT, 'INFO', N'Finished population of SA_LkpVehicleType table.');
+	EXEC [TransitDW].[Global].LogAction
+		 @TableName     = N'SA_LkpVehicleType'
+	   , @RowsAffected  = @@ROWCOUNT
+	   , @SeverityLevel = 'INFO'
+	   , @Description   = N'Finished population of SA_LkpVehicleType table.'
+	   , @ProcedureName = N'Fill_SA_LkpVehicleType';
     END TRY
     BEGIN CATCH
         -- Logging Error
-        INSERT INTO [TransitDW].[Global].[Log] (ProcedureName, ExecutedBy, TableName, RowsAffected, SeverityLevel, Description)
-        VALUES (N'Fill_SA_LkpVehicleType', SUSER_SNAME(), N'SA_LkpVehicleType', NULL, 'ERROR', ERROR_MESSAGE());
+
+	DECLARE @des nvarchar(MAX) = ERROR_MESSAGE();
+	EXEC [TransitDW].[Global].LogAction
+		 @TableName     = N'SA_LkpVehicleType'
+	   , @RowsAffected  = 0 -- NULL converted to zero
+	   , @SeverityLevel = 'ERROR'
+	   , @Description   = @des
+	   , @ProcedureName = N'Fill_SA_LkpVehicleType';
         THROW;
     END CATCH
 END
+
 GO
 
 
 /*********************    Procedure to fill SA_LkpVehicleStatus    *********************/
+
 CREATE OR ALTER PROCEDURE Fill_SA_LkpVehicleStatus
 AS
 BEGIN
     -- Logging Procedure Start
-    INSERT INTO [TransitDW].[Global].[Log] (ProcedureName, ExecutedBy, TableName, RowsAffected, SeverityLevel, Description)
-    VALUES (N'Fill_SA_LkpVehicleStatus', SUSER_SNAME(), N'SA_LkpVehicleStatus', NULL, 'INFO', N'Starting population of SA_LkpVehicleStatus table.');
+	EXEC [TransitDW].[Global].LogAction
+		 @TableName     = N'SA_LkpVehicleStatus'
+	   , @RowsAffected  = 0 -- NULL converted to zero
+	   , @SeverityLevel = 'INFO'
+	   , @Description   = N'Starting population of SA_LkpVehicleStatus table.'
+	   , @ProcedureName = N'Fill_SA_LkpVehicleStatus';
 
 	Truncate table SA_LkpVehicleStatus;
 
@@ -56,31 +73,44 @@ BEGIN
             LTRIM(RTRIM(StatusCode)) AS StatusCode,  -- Cleansing: Remove leading and trailing spaces
             Label_EN, 
             Label_FA
-        FROM [Lookup].LkpVehicleStatus
+        FROM [Transit].[Lookup].LkpVehicleStatus
         WHERE StatusCode IS NOT NULL AND StatusCode != '';  -- Cleansing: Only non-null and non-empty StatusCode values
 
         -- Logging Procedure End
-        INSERT INTO [TransitDW].[Global].[Log] (ProcedureName, ExecutedBy, TableName, RowsAffected, SeverityLevel, Description)
-        VALUES (N'Fill_SA_LkpVehicleStatus', SUSER_SNAME(), N'SA_LkpVehicleStatus', @@ROWCOUNT, 'INFO', N'Finished population of SA_LkpVehicleStatus table.');
+	EXEC [TransitDW].[Global].LogAction
+			@TableName     = N'SA_LkpVehicleStatus'
+		, @RowsAffected  = @@ROWCOUNT
+		, @SeverityLevel = 'INFO'
+		, @Description   = N'Finished population of SA_LkpVehicleStatus table.'
+		, @ProcedureName = N'Fill_SA_LkpVehicleStatus';
     END TRY
     BEGIN CATCH
         -- Logging Error
-        INSERT INTO [TransitDW].[Global].[Log] (ProcedureName, ExecutedBy, TableName, RowsAffected, SeverityLevel, Description)
-        VALUES (N'Fill_SA_LkpVehicleStatus', SUSER_SNAME(), N'SA_LkpVehicleStatus', NULL, 'ERROR', ERROR_MESSAGE());
+	DECLARE @des nvarchar(MAX) = ERROR_MESSAGE();
+	EXEC [TransitDW].[Global].LogAction
+		 @TableName     = N'SA_LkpVehicleStatus'
+	   , @RowsAffected  = 0 -- NULL converted to zero
+	   , @SeverityLevel = 'ERROR'
+	   , @Description   = @des
+	   , @ProcedureName = N'Fill_SA_LkpVehicleStatus';
         THROW;
     END CATCH
 END
+
 GO
 
-
 /*********************    Procedure to fill SA_LkpRouteStatus    *********************/
+
 CREATE OR ALTER PROCEDURE Fill_SA_LkpRouteStatus
 AS
 BEGIN
     -- Logging Procedure Start
-    INSERT INTO [TransitDW].[Global].[Log] (ProcedureName, ExecutedBy, TableName, RowsAffected, SeverityLevel, Description)
-    VALUES (N'Fill_SA_LkpRouteStatus', SUSER_SNAME(), N'SA_LkpRouteStatus', NULL, 'INFO', N'Starting population of SA_LkpRouteStatus table.');
-
+	EXEC [TransitDW].[Global].LogAction
+		 @TableName     = N'SA_LkpRouteStatus'
+	   , @RowsAffected  = 0 -- NULL converted to zero
+	   , @SeverityLevel = 'INFO'
+	   , @Description   = N'Starting population of SA_LkpRouteStatus table.'
+	   , @ProcedureName = N'Fill_SA_LkpRouteStatus';
 
 	Truncate table SA_LkpRouteStatus;
 
@@ -93,31 +123,45 @@ BEGIN
             LTRIM(RTRIM(StatusCode)) AS StatusCode,  -- Cleansing: Remove leading and trailing spaces
             Label_EN, 
             Label_FA
-        FROM [Lookup].LkpRouteStatus
+        FROM [Transit].[Lookup].LkpRouteStatus
         WHERE StatusCode IS NOT NULL AND StatusCode != '';  -- Cleansing: Only non-null and non-empty StatusCode values
 
         -- Logging Procedure End
-        INSERT INTO [TransitDW].[Global].[Log] (ProcedureName, ExecutedBy, TableName, RowsAffected, SeverityLevel, Description)
-        VALUES (N'Fill_SA_LkpRouteStatus', SUSER_SNAME(), N'SA_LkpRouteStatus', @@ROWCOUNT, 'INFO', N'Finished population of SA_LkpRouteStatus table.');
+	EXEC [TransitDW].[Global].LogAction
+		 @TableName     = N'SA_LkpRouteStatus'
+	   , @RowsAffected  = @@ROWCOUNT
+	   , @SeverityLevel = 'INFO'
+	   , @Description   = N'Finished population of SA_LkpRouteStatus table.'
+	   , @ProcedureName = N'Fill_SA_LkpRouteStatus';
     END TRY
     BEGIN CATCH
         -- Logging Error
-        INSERT INTO [TransitDW].[Global].[Log] (ProcedureName, ExecutedBy, TableName, RowsAffected, SeverityLevel, Description)
-        VALUES (N'Fill_SA_LkpRouteStatus', SUSER_SNAME(), N'SA_LkpRouteStatus', NULL, 'ERROR', ERROR_MESSAGE());
+	DECLARE @des nvarchar(MAX) = ERROR_MESSAGE();
+
+	EXEC [TransitDW].[Global].LogAction
+		 @TableName     = N'SA_LkpRouteStatus'
+	   , @RowsAffected  = 0 -- NULL converted to zero
+	   , @SeverityLevel = 'ERROR'
+	   , @Description   = @des
+	   , @ProcedureName = N'Fill_SA_LkpRouteStatus';
         THROW;
     END CATCH
 END
 
 GO
 
-
 /*********************    Procedure to fill SA_LkpJourneyStatus    *********************/
+
 CREATE OR ALTER PROCEDURE Fill_SA_LkpJourneyStatus
 AS
 BEGIN
     -- Logging Procedure Start
-    INSERT INTO [TransitDW].[Global].[Log] (ProcedureName, ExecutedBy, TableName, RowsAffected, SeverityLevel, Description)
-    VALUES (N'Fill_SA_LkpJourneyStatus', SUSER_SNAME(), N'SA_LkpJourneyStatus', NULL, 'INFO', N'Starting population of SA_LkpJourneyStatus table.');
+	EXEC [TransitDW].[Global].LogAction
+		 @TableName     = N'SA_LkpJourneyStatus'
+	   , @RowsAffected  = 0 -- NULL converted to zero
+	   , @SeverityLevel = 'INFO'
+	   , @Description   = N'Starting population of SA_LkpJourneyStatus table.'
+	   , @ProcedureName = N'Fill_SA_LkpJourneyStatus';
 
 
 	Truncate table SA_LkpJourneyStatus;
@@ -131,32 +175,45 @@ BEGIN
             LTRIM(RTRIM(StatusCode)) AS StatusCode,  -- Cleansing: Remove leading and trailing spaces
             Label_EN, 
             Label_FA
-        FROM [Lookup].LkpJourneyStatus
+        FROM [Transit].[Lookup].LkpJourneyStatus
         WHERE StatusCode IS NOT NULL AND StatusCode != '';  -- Cleansing: Only non-null and non-empty StatusCode values
 
         -- Logging Procedure End
-        INSERT INTO [TransitDW].[Global].[Log] (ProcedureName, ExecutedBy, TableName, RowsAffected, SeverityLevel, Description)
-        VALUES (N'Fill_SA_LkpJourneyStatus', SUSER_SNAME(), N'SA_LkpJourneyStatus', @@ROWCOUNT, 'INFO', N'Finished population of SA_LkpJourneyStatus table.');
+	EXEC [TransitDW].[Global].LogAction
+		 @TableName     = N'SA_LkpJourneyStatus'
+	   , @RowsAffected  = @@ROWCOUNT
+	   , @SeverityLevel = 'INFO'
+	   , @Description   = N'Finished population of SA_LkpJourneyStatus table.'
+	   , @ProcedureName = N'Fill_SA_LkpJourneyStatus';
     END TRY
     BEGIN CATCH
         -- Logging Error
-        INSERT INTO [TransitDW].[Global].[Log] (ProcedureName, ExecutedBy, TableName, RowsAffected, SeverityLevel, Description)
-        VALUES (N'Fill_SA_LkpJourneyStatus', SUSER_SNAME(), N'SA_LkpJourneyStatus', NULL, 'ERROR', ERROR_MESSAGE());
+	DECLARE @des nvarchar(MAX) = ERROR_MESSAGE();
+
+	EXEC [TransitDW].[Global].LogAction
+		 @TableName     = N'SA_LkpJourneyStatus'
+	   , @RowsAffected  = 0 -- NULL converted to zero
+	   , @SeverityLevel = 'ERROR'
+	   , @Description   =  @des 
+	   , @ProcedureName = N'Fill_SA_LkpJourneyStatus';
         THROW;
     END CATCH
 END
 
 GO
 
-
 /*********************    Procedure to fill SA_LkpDeviceType    *********************/
+
 CREATE OR ALTER PROCEDURE Fill_SA_LkpDeviceType
 AS
 BEGIN
     -- Logging Procedure Start
-    INSERT INTO [TransitDW].[Global].[Log] (ProcedureName, ExecutedBy, TableName, RowsAffected, SeverityLevel, Description)
-    VALUES (N'Fill_SA_LkpDeviceType', SUSER_SNAME(), N'SA_LkpDeviceType', NULL, 'INFO', N'Starting population of SA_LkpDeviceType table.');
-
+	EXEC [TransitDW].[Global].LogAction
+		 @TableName     = N'SA_LkpDeviceType'
+	   , @RowsAffected  = 0 -- NULL converted to zero
+	   , @SeverityLevel = 'INFO'
+	   , @Description   = N'Starting population of SA_LkpDeviceType table.'
+	   , @ProcedureName = N'Fill_SA_LkpDeviceType';
 
 	Truncate table SA_LkpDeviceType;
 
@@ -168,33 +225,47 @@ BEGIN
             LTRIM(RTRIM(TypeCode)) AS TypeCode,  -- Cleansing: Remove leading and trailing spaces
             Label_EN, 
             Label_FA
-        FROM [Lookup].LkpDeviceType
+        FROM [Transit].[Lookup].LkpDeviceType
         WHERE TypeCode IS NOT NULL AND TypeCode != '';  -- Cleansing: Only non-null and non-empty TypeCode values
 
         -- Logging Procedure End
-        INSERT INTO [TransitDW].[Global].[Log] (ProcedureName, ExecutedBy, TableName, RowsAffected, SeverityLevel, Description)
-        VALUES (N'Fill_SA_LkpDeviceType', SUSER_SNAME(), N'SA_LkpDeviceType', @@ROWCOUNT, 'INFO', N'Finished population of SA_LkpDeviceType table.');
-    END TRY
+	EXEC [TransitDW].[Global].LogAction
+		 @TableName     = N'SA_LkpDeviceType'
+	   , @RowsAffected  = @@ROWCOUNT
+	   , @SeverityLevel = 'INFO'
+	   , @Description   = N'Finished population of SA_LkpDeviceType table.'
+	   , @ProcedureName = N'Fill_SA_LkpDeviceType';
+   END TRY
     BEGIN CATCH
         -- Logging Error
-        INSERT INTO [TransitDW].[Global].[Log] (ProcedureName, ExecutedBy, TableName, RowsAffected, SeverityLevel, Description)
-        VALUES (N'Fill_SA_LkpDeviceType', SUSER_SNAME(), N'SA_LkpDeviceType', NULL, 'ERROR', ERROR_MESSAGE());
-        THROW;
+	DECLARE @des nvarchar(MAX) = ERROR_MESSAGE();
+
+	EXEC [TransitDW].[Global].LogAction
+		 @TableName     = N'SA_LkpDeviceType'
+	   , @RowsAffected  = 0 -- NULL converted to zero
+	   , @SeverityLevel = 'ERROR'
+	   , @Description   = @des
+	   , @ProcedureName = N'Fill_SA_LkpDeviceType';
+
+   THROW;
     END CATCH
 END
 
 GO
 
-
 /*********************    Procedure to fill SA_LkpDeviceStatus    *********************/
+
 CREATE OR ALTER PROCEDURE Fill_SA_LkpDeviceStatus
 AS
 BEGIN
     -- Logging Procedure Start
-    INSERT INTO [TransitDW].[Global].[Log] (ProcedureName, ExecutedBy, TableName, RowsAffected, SeverityLevel, Description)
-    VALUES (N'Fill_SA_LkpDeviceStatus', SUSER_SNAME(), N'SA_LkpDeviceStatus', NULL, 'INFO', N'Starting population of SA_LkpDeviceStatus table.');
-
-	Truncate table SA_LkpDeviceStatus;
+	EXEC [TransitDW].[Global].LogAction
+		 @TableName     = N'SA_LkpDeviceStatus'
+	   , @RowsAffected  = 0 -- NULL converted to zero
+	   , @SeverityLevel = 'INFO'
+	   , @Description   = N'Starting population of SA_LkpDeviceStatus table.'
+	   , @ProcedureName = N'Fill_SA_LkpDeviceStatus';
+   Truncate table SA_LkpDeviceStatus;
 
 
     BEGIN TRY
@@ -205,34 +276,49 @@ BEGIN
             LTRIM(RTRIM(StatusCode)) AS StatusCode,  -- Cleansing: Remove leading and trailing spaces
             Label_EN, 
             Label_FA
-        FROM [Lookup].LkpDeviceStatus
+        FROM [Transit].[Lookup].LkpDeviceStatus
         WHERE StatusCode IS NOT NULL AND StatusCode != '';  -- Cleansing: Only non-null and non-empty StatusCode values
 
         -- Logging Procedure End
-        INSERT INTO [TransitDW].[Global].[Log] (ProcedureName, ExecutedBy, TableName, RowsAffected, SeverityLevel, Description)
-        VALUES (N'Fill_SA_LkpDeviceStatus', SUSER_SNAME(), N'SA_LkpDeviceStatus', @@ROWCOUNT, 'INFO', N'Finished population of SA_LkpDeviceStatus table.');
-    END TRY
+	EXEC [TransitDW].[Global].LogAction
+		 @TableName     = N'SA_LkpDeviceStatus'
+	   , @RowsAffected  = @@ROWCOUNT
+	   , @SeverityLevel = 'INFO'
+	   , @Description   = N'Finished population of SA_LkpDeviceStatus table.'
+	   , @ProcedureName = N'Fill_SA_LkpDeviceStatus';
+   
+   END TRY
     BEGIN CATCH
         -- Logging Error
-        INSERT INTO [TransitDW].[Global].[Log] (ProcedureName, ExecutedBy, TableName, RowsAffected, SeverityLevel, Description)
-        VALUES (N'Fill_SA_LkpDeviceStatus', SUSER_SNAME(), N'SA_LkpDeviceStatus', NULL, 'ERROR', ERROR_MESSAGE());
-        THROW;
+	DECLARE @des nvarchar(MAX) = ERROR_MESSAGE();
+	
+	EXEC [TransitDW].[Global].LogAction
+		 @TableName     = N'SA_LkpDeviceStatus'
+	   , @RowsAffected  = 0 -- NULL converted to zero
+	   , @SeverityLevel = 'ERROR'
+	   , @Description   = @des
+	   , @ProcedureName = N'Fill_SA_LkpDeviceStatus';
+   
+   THROW;
     END CATCH
 END
 
 GO
 
-
 /*********************    Procedure to fill SA_LkpCardType    *********************/
+
 CREATE OR ALTER PROCEDURE Fill_SA_LkpCardType
 AS
 BEGIN
     -- Logging Procedure Start
-    INSERT INTO [TransitDW].[Global].[Log] (ProcedureName, ExecutedBy, TableName, RowsAffected, SeverityLevel, Description)
-    VALUES (N'Fill_SA_LkpCardType', SUSER_SNAME(), N'SA_LkpCardType', NULL, 'INFO', N'Starting population of SA_LkpCardType table.');
+    EXEC [TransitDW].[Global].LogAction
+         @TableName     = N'SA_LkpCardType'
+       , @RowsAffected  = 0 -- NULL converted to zero
+       , @SeverityLevel = 'INFO'
+       , @Description   = N'Starting population of SA_LkpCardType table.'
+       , @ProcedureName = N'Fill_SA_LkpCardType';
 
-
-	Truncate table SA_LkpCardType;
+    TRUNCATE TABLE SA_LkpCardType;
 
     BEGIN TRY
         -- Data Transformation/Cleansing (Example: Handle empty fields and format TypeCode properly)
@@ -242,33 +328,46 @@ BEGIN
             LTRIM(RTRIM(TypeCode)) AS TypeCode,  -- Cleansing: Remove leading and trailing spaces
             Label_EN, 
             Label_FA
-        FROM [Lookup].LkpCardType
+        FROM [Transit].[Lookup].LkpCardType
         WHERE TypeCode IS NOT NULL AND TypeCode != '';  -- Cleansing: Only non-null and non-empty TypeCode values
 
         -- Logging Procedure End
-        INSERT INTO [TransitDW].[Global].[Log] (ProcedureName, ExecutedBy, TableName, RowsAffected, SeverityLevel, Description)
-        VALUES (N'Fill_SA_LkpCardType', SUSER_SNAME(), N'SA_LkpCardType', @@ROWCOUNT, 'INFO', N'Finished population of SA_LkpCardType table.');
+        EXEC [TransitDW].[Global].LogAction
+             @TableName     = N'SA_LkpCardType'
+           , @RowsAffected  = @@ROWCOUNT
+           , @SeverityLevel = 'INFO'
+           , @Description   = N'Finished population of SA_LkpCardType table.'
+           , @ProcedureName = N'Fill_SA_LkpCardType';
     END TRY
     BEGIN CATCH
         -- Logging Error
-        INSERT INTO [TransitDW].[Global].[Log] (ProcedureName, ExecutedBy, TableName, RowsAffected, SeverityLevel, Description)
-        VALUES (N'Fill_SA_LkpCardType', SUSER_SNAME(), N'SA_LkpCardType', NULL, 'ERROR', ERROR_MESSAGE());
+     	 DECLARE @desc NVARCHAR(MAX) = ERROR_MESSAGE();
+        EXEC [TransitDW].[Global].LogAction
+             @TableName     = N'SA_LkpCardType'
+           , @RowsAffected  = 0 -- NULL converted to zero
+           , @SeverityLevel = 'ERROR'
+           , @Description   = @desc
+           , @ProcedureName = N'Fill_SA_LkpCardType';
+
         THROW;
     END CATCH
 END
 GO
 
-
 /*********************    Procedure to fill SA_LkpCardStatus    *********************/
+
 CREATE OR ALTER PROCEDURE Fill_SA_LkpCardStatus
 AS
 BEGIN
     -- Logging Procedure Start
-    INSERT INTO [TransitDW].[Global].[Log] (ProcedureName, ExecutedBy, TableName, RowsAffected, SeverityLevel, Description)
-    VALUES (N'Fill_SA_LkpCardStatus', SUSER_SNAME(), N'SA_LkpCardStatus', NULL, 'INFO', N'Starting population of SA_LkpCardStatus table.');
+    EXEC [TransitDW].[Global].LogAction
+         @TableName     = N'SA_LkpCardStatus'
+       , @RowsAffected  = 0 -- NULL converted to zero
+       , @SeverityLevel = 'INFO'
+       , @Description   = N'Starting population of SA_LkpCardStatus table.'
+       , @ProcedureName = N'Fill_SA_LkpCardStatus';
 
-	Truncate table SA_LkpCardStatus;
-
+    TRUNCATE TABLE SA_LkpCardStatus;
 
     BEGIN TRY
         -- Data Transformation/Cleansing (Example: Handle empty fields and format StatusCode properly)
@@ -278,17 +377,28 @@ BEGIN
             LTRIM(RTRIM(StatusCode)) AS StatusCode,  -- Cleansing: Remove leading and trailing spaces
             Label_EN, 
             Label_FA
-        FROM [Lookup].LkpCardStatus
+        FROM [Transit].[Lookup].LkpCardStatus
         WHERE StatusCode IS NOT NULL AND StatusCode != '';  -- Cleansing: Only non-null and non-empty StatusCode values
 
         -- Logging Procedure End
-        INSERT INTO [TransitDW].[Global].[Log] (ProcedureName, ExecutedBy, TableName, RowsAffected, SeverityLevel, Description)
-        VALUES (N'Fill_SA_LkpCardStatus', SUSER_SNAME(), N'SA_LkpCardStatus', @@ROWCOUNT, 'INFO', N'Finished population of SA_LkpCardStatus table.');
+        EXEC [TransitDW].[Global].LogAction
+             @TableName     = N'SA_LkpCardStatus'
+           , @RowsAffected  = @@ROWCOUNT
+           , @SeverityLevel = 'INFO'
+           , @Description   = N'Finished population of SA_LkpCardStatus table.'
+           , @ProcedureName = N'Fill_SA_LkpCardStatus';
     END TRY
     BEGIN CATCH
+        DECLARE @desc NVARCHAR(MAX) = ERROR_MESSAGE();
+
         -- Logging Error
-        INSERT INTO [TransitDW].[Global].[Log] (ProcedureName, ExecutedBy, TableName, RowsAffected, SeverityLevel, Description)
-        VALUES (N'Fill_SA_LkpCardStatus', SUSER_SNAME(), N'SA_LkpCardStatus', NULL, 'ERROR', ERROR_MESSAGE());
+        EXEC [TransitDW].[Global].LogAction
+             @TableName     = N'SA_LkpCardStatus'
+           , @RowsAffected  = 0 -- NULL converted to zero
+           , @SeverityLevel = 'ERROR'
+           , @Description   = @desc
+           , @ProcedureName = N'Fill_SA_LkpCardStatus';
+
         THROW;
     END CATCH
 END
@@ -296,16 +406,19 @@ GO
 
 
 /*********************    Procedure to fill SA_LkpPaymentMethod    *********************/
+
 CREATE OR ALTER PROCEDURE Fill_SA_LkpPaymentMethod
 AS
 BEGIN
     -- Logging Procedure Start
-    INSERT INTO [TransitDW].[Global].[Log] (ProcedureName, ExecutedBy, TableName, RowsAffected, SeverityLevel, Description)
-    VALUES (N'Fill_SA_LkpPaymentMethod', SUSER_SNAME(), N'SA_LkpPaymentMethod', NULL, 'INFO', N'Starting population of SA_LkpPaymentMethod table.');
+    EXEC [TransitDW].[Global].LogAction
+         @TableName     = N'SA_LkpPaymentMethod'
+       , @RowsAffected  = 0 -- NULL converted to zero
+       , @SeverityLevel = 'INFO'
+       , @Description   = N'Starting population of SA_LkpPaymentMethod table.'
+       , @ProcedureName = N'Fill_SA_LkpPaymentMethod';
 
-
-	Truncate table SA_LkpPaymentMethod;
-
+    TRUNCATE TABLE SA_LkpPaymentMethod;
 
     BEGIN TRY
         -- Data Transformation/Cleansing (Example: Handle empty fields and format MethodCode properly)
@@ -315,24 +428,35 @@ BEGIN
             LTRIM(RTRIM(MethodCode)) AS MethodCode,  -- Cleansing: Remove leading and trailing spaces
             Label_EN, 
             Label_FA
-        FROM [Lookup].LkpPaymentMethod
+        FROM [Transit].[Lookup].LkpPaymentMethod
         WHERE MethodCode IS NOT NULL AND MethodCode != '';  -- Cleansing: Only non-null and non-empty MethodCode values
 
         -- Logging Procedure End
-        INSERT INTO [TransitDW].[Global].[Log] (ProcedureName, ExecutedBy, TableName, RowsAffected, SeverityLevel, Description)
-        VALUES (N'Fill_SA_LkpPaymentMethod', SUSER_SNAME(), N'SA_LkpPaymentMethod', @@ROWCOUNT, 'INFO', N'Finished population of SA_LkpPaymentMethod table.');
+        EXEC [TransitDW].[Global].LogAction
+             @TableName     = N'SA_LkpPaymentMethod'
+           , @RowsAffected  = @@ROWCOUNT
+           , @SeverityLevel = 'INFO'
+           , @Description   = N'Finished population of SA_LkpPaymentMethod table.'
+           , @ProcedureName = N'Fill_SA_LkpPaymentMethod';
     END TRY
     BEGIN CATCH
+        DECLARE @desc NVARCHAR(MAX) = ERROR_MESSAGE();
+
         -- Logging Error
-        INSERT INTO [TransitDW].[Global].[Log] (ProcedureName, ExecutedBy, TableName, RowsAffected, SeverityLevel, Description)
-        VALUES (N'Fill_SA_LkpPaymentMethod', SUSER_SNAME(), N'SA_LkpPaymentMethod', NULL, 'ERROR', ERROR_MESSAGE());
+        EXEC [TransitDW].[Global].LogAction
+             @TableName     = N'SA_LkpPaymentMethod'
+           , @RowsAffected  = 0 -- NULL converted to zero
+           , @SeverityLevel = 'ERROR'
+           , @Description   = @desc
+           , @ProcedureName = N'Fill_SA_LkpPaymentMethod';
+
         THROW;
     END CATCH
 END
 GO
 
-
 /*********************    Procedure to fill SA_LkpSalesChannel    *********************/
+
 CREATE OR ALTER PROCEDURE Fill_SA_LkpSalesChannel
 AS
 BEGIN
@@ -351,7 +475,7 @@ BEGIN
             LTRIM(RTRIM(ChannelCode)) AS ChannelCode,  -- Cleansing: Remove leading and trailing spaces
             Label_EN, 
             Label_FA
-        FROM [Lookup].LkpSalesChannel
+        FROM [Transit].[Lookup].LkpSalesChannel
         WHERE ChannelCode IS NOT NULL AND ChannelCode != '';  -- Cleansing: Only non-null and non-empty ChannelCode values
 
         -- Logging Procedure End
@@ -364,19 +488,23 @@ BEGIN
         VALUES (N'Fill_SA_LkpSalesChannel', SUSER_SNAME(), N'SA_LkpSalesChannel', NULL, 'ERROR', ERROR_MESSAGE());
         THROW;
     END CATCH
-END
-GO
-
+END;
+GO;
 
 /*********************    Procedure to fill SA_LkpMaintenanceType    *********************/
+
 CREATE OR ALTER PROCEDURE Fill_SA_LkpMaintenanceType
 AS
 BEGIN
     -- Logging Procedure Start
-    INSERT INTO [TransitDW].[Global].[Log] (ProcedureName, ExecutedBy, TableName, RowsAffected, SeverityLevel, Description)
-    VALUES (N'Fill_SA_LkpMaintenanceType', SUSER_SNAME(), N'SA_LkpMaintenanceType', NULL, 'INFO', N'Starting population of SA_LkpMaintenanceType table.');
+    EXEC [TransitDW].[Global].LogAction
+         @TableName     = N'SA_LkpMaintenanceType'
+       , @RowsAffected  = 0
+       , @SeverityLevel = 'INFO'
+       , @Description   = N'Starting population of SA_LkpMaintenanceType table.'
+       , @ProcedureName = N'Fill_SA_LkpMaintenanceType';
 
-	Truncate table SA_LkpMaintenanceType;
+    TRUNCATE TABLE SA_LkpMaintenanceType;
 
     BEGIN TRY
         -- Data Transformation/Cleansing (Example: Handle empty fields and format TypeCode properly)
@@ -386,33 +514,47 @@ BEGIN
             LTRIM(RTRIM(TypeCode)) AS TypeCode,  -- Cleansing: Remove leading and trailing spaces
             Label_EN, 
             Label_FA
-        FROM [Lookup].LkpMaintenanceType
+        FROM [Transit].[Lookup].LkpMaintenanceType
         WHERE TypeCode IS NOT NULL AND TypeCode != '';  -- Cleansing: Only non-null and non-empty TypeCode values
 
         -- Logging Procedure End
-        INSERT INTO [TransitDW].[Global].[Log] (ProcedureName, ExecutedBy, TableName, RowsAffected, SeverityLevel, Description)
-        VALUES (N'Fill_SA_LkpMaintenanceType', SUSER_SNAME(), N'SA_LkpMaintenanceType', @@ROWCOUNT, 'INFO', N'Finished population of SA_LkpMaintenanceType table.');
+        EXEC [TransitDW].[Global].LogAction
+             @TableName     = N'SA_LkpMaintenanceType'
+           , @RowsAffected  = @@ROWCOUNT
+           , @SeverityLevel = 'INFO'
+           , @Description   = N'Finished population of SA_LkpMaintenanceType table.'
+           , @ProcedureName = N'Fill_SA_LkpMaintenanceType';
     END TRY
     BEGIN CATCH
+        DECLARE @desc NVARCHAR(MAX) = ERROR_MESSAGE();
+
         -- Logging Error
-        INSERT INTO [TransitDW].[Global].[Log] (ProcedureName, ExecutedBy, TableName, RowsAffected, SeverityLevel, Description)
-        VALUES (N'Fill_SA_LkpMaintenanceType', SUSER_SNAME(), N'SA_LkpMaintenanceType', NULL, 'ERROR', ERROR_MESSAGE());
+        EXEC [TransitDW].[Global].LogAction
+             @TableName     = N'SA_LkpMaintenanceType'
+           , @RowsAffected  = 0
+           , @SeverityLevel = 'ERROR'
+           , @Description   = @desc
+           , @ProcedureName = N'Fill_SA_LkpMaintenanceType';
+
         THROW;
     END CATCH
 END
 GO
 
-
 /*********************    Procedure to fill SA_LkpPartCategory    *********************/
+
 CREATE OR ALTER PROCEDURE Fill_SA_LkpPartCategory
 AS
 BEGIN
     -- Logging Procedure Start
-    INSERT INTO [TransitDW].[Global].[Log] (ProcedureName, ExecutedBy, TableName, RowsAffected, SeverityLevel, Description)
-    VALUES (N'Fill_SA_LkpPartCategory', SUSER_SNAME(), N'SA_LkpPartCategory', NULL, 'INFO', N'Starting population of SA_LkpPartCategory table.');
+    EXEC [TransitDW].[Global].LogAction
+         @TableName     = N'SA_LkpPartCategory',
+         @RowsAffected  = 0,
+         @SeverityLevel = 'INFO',
+         @Description   = N'Starting population of SA_LkpPartCategory table.',
+         @ProcedureName = N'Fill_SA_LkpPartCategory';
 
-	Truncate table SA_LkpPartCategory;
-
+    TRUNCATE TABLE SA_LkpPartCategory;
 
     BEGIN TRY
         -- Data Transformation/Cleansing (Example: Handle empty fields and format CategoryCode properly)
@@ -423,17 +565,28 @@ BEGIN
             LTRIM(RTRIM(CategoryCode)) AS CategoryCode,  -- Cleansing: Remove leading and trailing spaces
             Label_EN, 
             Label_FA
-        FROM [Lookup].LkpPartCategory
+        FROM [Transit].[Lookup].LkpPartCategory
         WHERE CategoryCode IS NOT NULL AND CategoryCode != '';  -- Cleansing: Only non-null and non-empty CategoryCode values
 
         -- Logging Procedure End
-        INSERT INTO [TransitDW].[Global].[Log] (ProcedureName, ExecutedBy, TableName, RowsAffected, SeverityLevel, Description)
-        VALUES (N'Fill_SA_LkpPartCategory', SUSER_SNAME(), N'SA_LkpPartCategory', @@ROWCOUNT, 'INFO', N'Finished population of SA_LkpPartCategory table.');
+        EXEC [TransitDW].[Global].LogAction
+             @TableName     = N'SA_LkpPartCategory',
+             @RowsAffected  = @@ROWCOUNT,
+             @SeverityLevel = 'INFO',
+             @Description   = N'Finished population of SA_LkpPartCategory table.',
+             @ProcedureName = N'Fill_SA_LkpPartCategory';
     END TRY
     BEGIN CATCH
+        DECLARE @desc NVARCHAR(MAX) = ERROR_MESSAGE();
+
         -- Logging Error
-        INSERT INTO [TransitDW].[Global].[Log] (ProcedureName, ExecutedBy, TableName, RowsAffected, SeverityLevel, Description)
-        VALUES (N'Fill_SA_LkpPartCategory', SUSER_SNAME(), N'SA_LkpPartCategory', NULL, 'ERROR', ERROR_MESSAGE());
+        EXEC [TransitDW].[Global].LogAction
+             @TableName     = N'SA_LkpPartCategory',
+             @RowsAffected  = 0,
+             @SeverityLevel = 'ERROR',
+             @Description   = @desc,
+             @ProcedureName = N'Fill_SA_LkpPartCategory';
+
         THROW;
     END CATCH
 END
@@ -441,16 +594,19 @@ GO
 
 
 /*********************    Procedure to fill SA_LkpRole    *********************/
+
 CREATE OR ALTER PROCEDURE Fill_SA_LkpRole
 AS
 BEGIN
     -- Logging Procedure Start
-    INSERT INTO [TransitDW].[Global].[Log] (ProcedureName, ExecutedBy, TableName, RowsAffected, SeverityLevel, Description)
-    VALUES (N'Fill_SA_LkpRole', SUSER_SNAME(), N'SA_LkpRole', NULL, 'INFO', N'Starting population of SA_LkpRole table.');
+    EXEC [TransitDW].[Global].LogAction
+         @TableName     = N'SA_LkpRole',
+         @RowsAffected  = 0,
+         @SeverityLevel = 'INFO',
+         @Description   = N'Starting population of SA_LkpRole table.',
+         @ProcedureName = N'Fill_SA_LkpRole';
 
-
-	Truncate table SA_LkpRole;
-
+    TRUNCATE TABLE SA_LkpRole;
 
     BEGIN TRY
         -- Data Transformation/Cleansing (Example: Handle empty fields and format RoleCode properly)
@@ -460,34 +616,47 @@ BEGIN
             LTRIM(RTRIM(RoleCode)) AS RoleCode,  -- Cleansing: Remove leading and trailing spaces
             Label_EN, 
             Label_FA
-        FROM [Lookup].LkpRole
+        FROM [Transit].[Lookup].LkpRole
         WHERE RoleCode IS NOT NULL AND RoleCode != '';  -- Cleansing: Only non-null and non-empty RoleCode values
 
         -- Logging Procedure End
-        INSERT INTO [TransitDW].[Global].[Log] (ProcedureName, ExecutedBy, TableName, RowsAffected, SeverityLevel, Description)
-        VALUES (N'Fill_SA_LkpRole', SUSER_SNAME(), N'SA_LkpRole', @@ROWCOUNT, 'INFO', N'Finished population of SA_LkpRole table.');
+        EXEC [TransitDW].[Global].LogAction
+             @TableName     = N'SA_LkpRole',
+             @RowsAffected  = @@ROWCOUNT,
+             @SeverityLevel = 'INFO',
+             @Description   = N'Finished population of SA_LkpRole table.',
+             @ProcedureName = N'Fill_SA_LkpRole';
     END TRY
     BEGIN CATCH
+        DECLARE @desc NVARCHAR(MAX) = ERROR_MESSAGE();
+
         -- Logging Error
-        INSERT INTO [TransitDW].[Global].[Log] (ProcedureName, ExecutedBy, TableName, RowsAffected, SeverityLevel, Description)
-        VALUES (N'Fill_SA_LkpRole', SUSER_SNAME(), N'SA_LkpRole', NULL, 'ERROR', ERROR_MESSAGE());
+        EXEC [TransitDW].[Global].LogAction
+             @TableName     = N'SA_LkpRole',
+             @RowsAffected  = 0,
+             @SeverityLevel = 'ERROR',
+             @Description   = @desc,
+             @ProcedureName = N'Fill_SA_LkpRole';
+
         THROW;
     END CATCH
 END
 GO
 
-
 /*********************    Procedure to fill SA_LkpDepartment    *********************/
+
 CREATE OR ALTER PROCEDURE Fill_SA_LkpDepartment
 AS
 BEGIN
     -- Logging Procedure Start
-    INSERT INTO [TransitDW].[Global].[Log] (ProcedureName, ExecutedBy, TableName, RowsAffected, SeverityLevel, Description)
-    VALUES (N'Fill_SA_LkpDepartment', SUSER_SNAME(), N'SA_LkpDepartment', NULL, 'INFO', N'Starting population of SA_LkpDepartment table.');
+    EXEC [TransitDW].[Global].LogAction
+         @TableName     = N'SA_LkpDepartment',
+         @RowsAffected  = 0,
+         @SeverityLevel = 'INFO',
+         @Description   = N'Starting population of SA_LkpDepartment table.',
+         @ProcedureName = N'Fill_SA_LkpDepartment';
 
-
-	Truncate table SA_LkpDepartment;
-
+    TRUNCATE TABLE SA_LkpDepartment;
 
     BEGIN TRY
         -- Data Transformation/Cleansing (Example: Handle empty fields and format DeptCode properly)
@@ -497,35 +666,47 @@ BEGIN
             LTRIM(RTRIM(DeptCode)) AS DeptCode,  -- Cleansing: Remove leading and trailing spaces
             Label_EN, 
             Label_FA
-        FROM [Lookup].LkpDepartment
+        FROM [Transit].[Lookup].LkpDepartment
         WHERE DeptCode IS NOT NULL AND DeptCode != '';  -- Cleansing: Only non-null and non-empty DeptCode values
 
         -- Logging Procedure End
-        INSERT INTO [TransitDW].[Global].[Log] (ProcedureName, ExecutedBy, TableName, RowsAffected, SeverityLevel, Description)
-        VALUES (N'Fill_SA_LkpDepartment', SUSER_SNAME(), N'SA_LkpDepartment', @@ROWCOUNT, 'INFO', N'Finished population of SA_LkpDepartment table.');
+        EXEC [TransitDW].[Global].LogAction
+             @TableName     = N'SA_LkpDepartment',
+             @RowsAffected  = @@ROWCOUNT,
+             @SeverityLevel = 'INFO',
+             @Description   = N'Finished population of SA_LkpDepartment table.',
+             @ProcedureName = N'Fill_SA_LkpDepartment';
     END TRY
     BEGIN CATCH
+        DECLARE @desc NVARCHAR(MAX) = ERROR_MESSAGE();
+
         -- Logging Error
-        INSERT INTO [TransitDW].[Global].[Log] (ProcedureName, ExecutedBy, TableName, RowsAffected, SeverityLevel, Description)
-        VALUES (N'Fill_SA_LkpDepartment', SUSER_SNAME(), N'SA_LkpDepartment', NULL, 'ERROR', ERROR_MESSAGE());
+        EXEC [TransitDW].[Global].LogAction
+             @TableName     = N'SA_LkpDepartment',
+             @RowsAffected  = 0,
+             @SeverityLevel = 'ERROR',
+             @Description   = @desc,
+             @ProcedureName = N'Fill_SA_LkpDepartment';
+
         THROW;
     END CATCH
 END
 GO
 
-
 /*********************    Procedure to fill SA_LkpShiftType    *********************/
+
 CREATE OR ALTER PROCEDURE Fill_SA_LkpShiftType
 AS
 BEGIN
     -- Logging Procedure Start
-    INSERT INTO [TransitDW].[Global].[Log] (ProcedureName, ExecutedBy, TableName, RowsAffected, SeverityLevel, Description)
-    VALUES (N'Fill_SA_LkpShiftType', SUSER_SNAME(), N'SA_LkpShiftType', NULL, 'INFO', N'Starting population of SA_LkpShiftType table.');
+    EXEC [TransitDW].[Global].LogAction
+         @TableName     = N'SA_LkpShiftType',
+         @RowsAffected  = 0,
+         @SeverityLevel = 'INFO',
+         @Description   = N'Starting population of SA_LkpShiftType table.',
+         @ProcedureName = N'Fill_SA_LkpShiftType';
 
-
-	Truncate table SA_LkpShiftType;
-
-
+    TRUNCATE TABLE SA_LkpShiftType;
 
     BEGIN TRY
         -- Data Transformation/Cleansing (Example: Handle empty fields and format ShiftCode properly)
@@ -535,33 +716,47 @@ BEGIN
             LTRIM(RTRIM(ShiftCode)) AS ShiftCode,  -- Cleansing: Remove leading and trailing spaces
             Label_EN, 
             Label_FA
-        FROM [Lookup].LkpShiftType
+        FROM [Transit].[Lookup].LkpShiftType
         WHERE ShiftCode IS NOT NULL AND ShiftCode != '';  -- Cleansing: Only non-null and non-empty ShiftCode values
 
         -- Logging Procedure End
-        INSERT INTO [TransitDW].[Global].[Log] (ProcedureName, ExecutedBy, TableName, RowsAffected, SeverityLevel, Description)
-        VALUES (N'Fill_SA_LkpShiftType', SUSER_SNAME(), N'SA_LkpShiftType', @@ROWCOUNT, 'INFO', N'Finished population of SA_LkpShiftType table.');
+        EXEC [TransitDW].[Global].LogAction
+             @TableName     = N'SA_LkpShiftType',
+             @RowsAffected  = @@ROWCOUNT,
+             @SeverityLevel = 'INFO',
+             @Description   = N'Finished population of SA_LkpShiftType table.',
+             @ProcedureName = N'Fill_SA_LkpShiftType';
     END TRY
     BEGIN CATCH
+        DECLARE @desc NVARCHAR(MAX) = ERROR_MESSAGE();
+
         -- Logging Error
-        INSERT INTO [TransitDW].[Global].[Log] (ProcedureName, ExecutedBy, TableName, RowsAffected, SeverityLevel, Description)
-        VALUES (N'Fill_SA_LkpShiftType', SUSER_SNAME(), N'SA_LkpShiftType', NULL, 'ERROR', ERROR_MESSAGE());
+        EXEC [TransitDW].[Global].LogAction
+             @TableName     = N'SA_LkpShiftType',
+             @RowsAffected  = 0,
+             @SeverityLevel = 'ERROR',
+             @Description   = @desc,
+             @ProcedureName = N'Fill_SA_LkpShiftType';
+
         THROW;
     END CATCH
 END
 GO
 
-
 /*********************    Procedure to fill SA_LkpFuelType    *********************/
+
 CREATE OR ALTER PROCEDURE Fill_SA_LkpFuelType
 AS
 BEGIN
     -- Logging Procedure Start
-    INSERT INTO [TransitDW].[Global].[Log] (ProcedureName, ExecutedBy, TableName, RowsAffected, SeverityLevel, Description)
-    VALUES (N'Fill_SA_LkpFuelType', SUSER_SNAME(), N'SA_LkpFuelType', NULL, 'INFO', N'Starting population of SA_LkpFuelType table.');
+    EXEC [TransitDW].[Global].LogAction
+         @TableName     = N'SA_LkpFuelType',
+         @RowsAffected  = 0,
+         @SeverityLevel = 'INFO',
+         @Description   = N'Starting population of SA_LkpFuelType table.',
+         @ProcedureName = N'Fill_SA_LkpFuelType';
 
-	Truncate table SA_LkpFuelType;
-
+    TRUNCATE TABLE SA_LkpFuelType;
 
     BEGIN TRY
         -- Data Transformation/Cleansing (Example: Handle empty fields and format FuelCode properly)
@@ -571,33 +766,47 @@ BEGIN
             LTRIM(RTRIM(FuelCode)) AS FuelCode,  -- Cleansing: Remove leading and trailing spaces
             Label_EN, 
             Label_FA
-        FROM [Lookup].LkpFuelType
+        FROM [Transit].[Lookup].LkpFuelType
         WHERE FuelCode IS NOT NULL AND FuelCode != '';  -- Cleansing: Only non-null and non-empty FuelCode values
 
         -- Logging Procedure End
-        INSERT INTO [TransitDW].[Global].[Log] (ProcedureName, ExecutedBy, TableName, RowsAffected, SeverityLevel, Description)
-        VALUES (N'Fill_SA_LkpFuelType', SUSER_SNAME(), N'SA_LkpFuelType', @@ROWCOUNT, 'INFO', N'Finished population of SA_LkpFuelType table.');
+        EXEC [TransitDW].[Global].LogAction
+             @TableName     = N'SA_LkpFuelType',
+             @RowsAffected  = @@ROWCOUNT,
+             @SeverityLevel = 'INFO',
+             @Description   = N'Finished population of SA_LkpFuelType table.',
+             @ProcedureName = N'Fill_SA_LkpFuelType';
     END TRY
     BEGIN CATCH
+        DECLARE @desc NVARCHAR(MAX) = ERROR_MESSAGE();
+
         -- Logging Error
-        INSERT INTO [TransitDW].[Global].[Log] (ProcedureName, ExecutedBy, TableName, RowsAffected, SeverityLevel, Description)
-        VALUES (N'Fill_SA_LkpFuelType', SUSER_SNAME(), N'SA_LkpFuelType', NULL, 'ERROR', ERROR_MESSAGE());
+        EXEC [TransitDW].[Global].LogAction
+             @TableName     = N'SA_LkpFuelType',
+             @RowsAffected  = 0,
+             @SeverityLevel = 'ERROR',
+             @Description   = @desc,
+             @ProcedureName = N'Fill_SA_LkpFuelType';
+
         THROW;
     END CATCH
 END
 GO
 
-
 /*********************    Procedure to fill SA_Station    *********************/
+
 CREATE OR ALTER PROCEDURE Fill_SA_Station
 AS
 BEGIN
     -- Logging Procedure Start
-    INSERT INTO [TransitDW].[Global].[Log] (ProcedureName, ExecutedBy, TableName, RowsAffected, SeverityLevel, Description)
-    VALUES (N'Fill_SA_Station', SUSER_SNAME(), N'SA_Station', NULL, 'INFO', N'Starting population of SA_Station table.');
+    EXEC [TransitDW].[Global].LogAction
+         @TableName     = N'SA_Station',
+         @RowsAffected  = 0,
+         @SeverityLevel = 'INFO',
+         @Description   = N'Starting population of SA_Station table.',
+         @ProcedureName = N'Fill_SA_Station';
 
-	Truncate table SA_Station;
-
+    TRUNCATE TABLE SA_Station;
 
     BEGIN TRY
         -- Data Transformation/Cleansing (Example: Handle empty fields and format IsAccessible properly)
@@ -612,75 +821,156 @@ BEGIN
             ZoneCode, 
             OpeningDate, 
             CASE 
-                WHEN IsAccessible = 'Yes' THEN 'Yes'
-                WHEN IsAccessible = 'No' THEN 'No'
+                WHEN IsAccessible = 1 THEN 'Yes'
+                WHEN IsAccessible = 0 THEN 'No'
                 ELSE 'No'
             END AS IsAccessible -- Cleansing: Ensure IsAccessible is only 'Yes' or 'No'
-        FROM [Transport].Station
-        WHERE StationName IS NOT NULL AND StationName != '';  -- Cleansing: Only non-null and non-empty StationName values
+        FROM [Transit].[Transport].Station
+        WHERE StationName IS NOT NULL AND StationName != '';
 
         -- Logging Procedure End
-        INSERT INTO [TransitDW].[Global].[Log] (ProcedureName, ExecutedBy, TableName, RowsAffected, SeverityLevel, Description)
-        VALUES (N'Fill_SA_Station', SUSER_SNAME(), N'SA_Station', @@ROWCOUNT, 'INFO', N'Finished population of SA_Station table.');
+        EXEC [TransitDW].[Global].LogAction
+             @TableName     = N'SA_Station',
+             @RowsAffected  = @@ROWCOUNT,
+             @SeverityLevel = 'INFO',
+             @Description   = N'Finished population of SA_Station table.',
+             @ProcedureName = N'Fill_SA_Station';
     END TRY
     BEGIN CATCH
+        DECLARE @desc NVARCHAR(MAX) = ERROR_MESSAGE();
+
         -- Logging Error
-        INSERT INTO [TransitDW].[Global].[Log] (ProcedureName, ExecutedBy, TableName, RowsAffected, SeverityLevel, Description)
-        VALUES (N'Fill_SA_Station', SUSER_SNAME(), N'SA_Station', NULL, 'ERROR', ERROR_MESSAGE());
+        EXEC [TransitDW].[Global].LogAction
+             @TableName     = N'SA_Station',
+             @RowsAffected  = 0,
+             @SeverityLevel = 'ERROR',
+             @Description   = @desc,
+             @ProcedureName = N'Fill_SA_Station';
+
         THROW;
     END CATCH
 END
 GO
 
-
 /*********************    Procedure to fill SA_Route    *********************/
+
 CREATE OR ALTER PROCEDURE Fill_SA_Route
 AS
 BEGIN
     -- Logging Procedure Start
-    INSERT INTO [TransitDW].[Global].[Log] (ProcedureName, ExecutedBy, TableName, RowsAffected, SeverityLevel, Description)
-    VALUES (N'Fill_SA_Route', SUSER_SNAME(), N'SA_Route', NULL, 'INFO', N'Starting population of SA_Route table.');
+    EXEC [TransitDW].[Global].LogAction
+         @TableName     = N'SA_Route',
+         @RowsAffected  = 0,
+         @SeverityLevel = 'INFO',
+         @Description   = N'Starting population of SA_Route table.',
+         @ProcedureName = N'Fill_SA_Route';
 
-	Truncate table SA_Route;
-
+    TRUNCATE TABLE SA_Route;
 
     BEGIN TRY
         -- Data Transformation/Cleansing (Example: Handle empty fields and format RouteCode properly)
         INSERT INTO SA_Route (RouteID, RouteCode, RouteName, PeakFrequency, OffPeakFreq, RouteStatusID)
         SELECT 
             RouteID, 
-            LTRIM(RTRIM(RouteCode)) AS RouteCode,  -- Cleansing: Remove leading and trailing spaces
+            LTRIM(RTRIM(RouteCode)) AS RouteCode,
             RouteName, 
             PeakFrequency, 
             OffPeakFreq, 
             RouteStatusID
-        FROM [Transport].Route
-        WHERE RouteCode IS NOT NULL AND RouteCode != '';  -- Cleansing: Only non-null and non-empty RouteCode values
+        FROM [Transit].[Transport].Route
+        WHERE RouteCode IS NOT NULL AND RouteCode != '';
 
         -- Logging Procedure End
-        INSERT INTO [TransitDW].[Global].[Log] (ProcedureName, ExecutedBy, TableName, RowsAffected, SeverityLevel, Description)
-        VALUES (N'Fill_SA_Route', SUSER_SNAME(), N'SA_Route', @@ROWCOUNT, 'INFO', N'Finished population of SA_Route table.');
+        EXEC [TransitDW].[Global].LogAction
+             @TableName     = N'SA_Route',
+             @RowsAffected  = @@ROWCOUNT,
+             @SeverityLevel = 'INFO',
+             @Description   = N'Finished population of SA_Route table.',
+             @ProcedureName = N'Fill_SA_Route';
     END TRY
     BEGIN CATCH
+        DECLARE @desc NVARCHAR(MAX) = ERROR_MESSAGE();
+
         -- Logging Error
-        INSERT INTO [TransitDW].[Global].[Log] (ProcedureName, ExecutedBy, TableName, RowsAffected, SeverityLevel, Description)
-        VALUES (N'Fill_SA_Route', SUSER_SNAME(), N'SA_Route', NULL, 'ERROR', ERROR_MESSAGE());
+        EXEC [TransitDW].[Global].LogAction
+             @TableName     = N'SA_Route',
+             @RowsAffected  = 0,
+             @SeverityLevel = 'ERROR',
+             @Description   = @desc,
+             @ProcedureName = N'Fill_SA_Route';
+
         THROW;
     END CATCH
 END
-GO
+go
+
 
 
 /*********************    Procedure to fill SA_RouteStation *********************/
+
 CREATE OR ALTER PROCEDURE Fill_SA_RouteStation
 AS
 BEGIN
     -- Logging Procedure Start
-    INSERT INTO [TransitDW].[Global].[Log] (ProcedureName, ExecutedBy, TableName, RowsAffected, SeverityLevel, Description)
-    VALUES (N'Fill_SA_RouteStation', SUSER_SNAME(), N'SA_RouteStation', NULL, 'INFO', N'Starting population of SA_RouteStation table.');
+    EXEC [TransitDW].[Global].LogAction
+         @TableName     = N'RouteStation',
+         @RowsAffected  = 0,
+         @SeverityLevel = 'INFO',
+         @Description   = N'Starting population of SA_RouteStation table.',
+         @ProcedureName = N'Fill_SA_RouteStation';
 
-	Truncate table SA_RouteStation;
+    TRUNCATE TABLE SA_Route;
 
+    BEGIN TRY
+        -- Data Transformation/Cleansing (Example: Handle empty fields and format RouteCode properly)
+        INSERT INTO SA_RouteStation (RouteKey, StationKey, SeqNo)
+        SELECT 
+            RouteID, 
+            StationID,
+			SeqNo
+        FROM [Transit].[Transport].RouteStation;
+
+        -- Logging Procedure End
+        EXEC [TransitDW].[Global].LogAction
+             @TableName     = N'RouteStation',
+             @RowsAffected  = @@ROWCOUNT,
+             @SeverityLevel = 'INFO',
+             @Description   = N'Finished population of RouteStation table.',
+             @ProcedureName = N'Fill_SA_RouteStation';
+    END TRY
+    BEGIN CATCH
+        DECLARE @desc NVARCHAR(MAX) = ERROR_MESSAGE();
+
+        -- Logging Error
+        EXEC [TransitDW].[Global].LogAction
+             @TableName     = N'RouteStation',
+             @RowsAffected  = 0,
+             @SeverityLevel = 'ERROR',
+             @Description   = @desc,
+             @ProcedureName = N'Fill_SA_RouteStation';
+
+        THROW;
+    END CATCH
+END
+go
+
+
+
+
+/*********************    Procedure to fill SA_RouteStation *********************/
+
+CREATE OR ALTER PROCEDURE Fill_SA_RouteStation
+AS
+BEGIN
+    -- Logging Procedure Start
+    EXEC [TransitDW].[Global].LogAction
+         @TableName     = N'SA_RouteStation',
+         @RowsAffected  = 0,
+         @SeverityLevel = 'INFO',
+         @Description   = N'Starting population of SA_RouteStation table.',
+         @ProcedureName = N'Fill_SA_RouteStation';
+
+    TRUNCATE TABLE SA_RouteStation;
 
     BEGIN TRY
         -- Data Transformation/Cleansing (Example: Handle missing fields or incorrect values)
@@ -689,32 +979,47 @@ BEGIN
             RouteID, 
             SeqNo, 
             StationID
-        FROM [Transport].RouteStation
-        WHERE RouteID IS NOT NULL AND StationID IS NOT NULL;  -- Cleansing: Ensure RouteID and StationID are not null
+        FROM [Transit].[Transport].RouteStation
+        WHERE RouteID IS NOT NULL AND StationID IS NOT NULL;
 
         -- Logging Procedure End
-        INSERT INTO [TransitDW].[Global].[Log] (ProcedureName, ExecutedBy, TableName, RowsAffected, SeverityLevel, Description)
-        VALUES (N'Fill_SA_RouteStation', SUSER_SNAME(), N'SA_RouteStation', @@ROWCOUNT, 'INFO', N'Finished population of SA_RouteStation table.');
+        EXEC [TransitDW].[Global].LogAction
+             @TableName     = N'SA_RouteStation',
+             @RowsAffected  = @@ROWCOUNT,
+             @SeverityLevel = 'INFO',
+             @Description   = N'Finished population of SA_RouteStation table.',
+             @ProcedureName = N'Fill_SA_RouteStation';
     END TRY
     BEGIN CATCH
+        DECLARE @desc NVARCHAR(MAX) = ERROR_MESSAGE();
+
         -- Logging Error
-        INSERT INTO [TransitDW].[Global].[Log] (ProcedureName, ExecutedBy, TableName, RowsAffected, SeverityLevel, Description)
-        VALUES (N'Fill_SA_RouteStation', SUSER_SNAME(), N'SA_RouteStation', NULL, 'ERROR', ERROR_MESSAGE());
+        EXEC [TransitDW].[Global].LogAction
+             @TableName     = N'SA_RouteStation',
+             @RowsAffected  = 0,
+             @SeverityLevel = 'ERROR',
+             @Description   = @desc,
+             @ProcedureName = N'Fill_SA_RouteStation';
+
         THROW;
     END CATCH
 END
-GO
-
+go
 
 /*********************    Procedure to fill SA_Vehicle *********************/
+
 CREATE OR ALTER PROCEDURE Fill_SA_Vehicle
 AS
 BEGIN
     -- Logging Procedure Start
-    INSERT INTO [TransitDW].[Global].[Log] (ProcedureName, ExecutedBy, TableName, RowsAffected, SeverityLevel, Description)
-    VALUES (N'Fill_SA_Vehicle', SUSER_SNAME(), N'SA_Vehicle', NULL, 'INFO', N'Starting population of SA_Vehicle table.');
+    EXEC [TransitDW].[Global].LogAction
+         @TableName     = N'SA_Vehicle',
+         @RowsAffected  = 0,
+         @SeverityLevel = 'INFO',
+         @Description   = N'Starting population of SA_Vehicle table.',
+         @ProcedureName = N'Fill_SA_Vehicle';
 
-	Truncate table SA_Vehicle;
+    TRUNCATE TABLE SA_Vehicle;
 
     BEGIN TRY
         -- Data Transformation/Cleansing (Example: Handle missing or invalid data)
@@ -731,32 +1036,47 @@ BEGIN
             EngineNumber, 
             GPSUnitSerial, 
             LastOdometerKM
-        FROM [Transport].Vehicle
-        WHERE PlateNo IS NOT NULL AND Capacity > 0;  -- Cleansing: Ensure PlateNo is not null and Capacity is positive
+        FROM [Transit].[Transport].Vehicle
+        WHERE PlateNo IS NOT NULL AND Capacity > 0;
 
         -- Logging Procedure End
-        INSERT INTO [TransitDW].[Global].[Log] (ProcedureName, ExecutedBy, TableName, RowsAffected, SeverityLevel, Description)
-        VALUES (N'Fill_SA_Vehicle', SUSER_SNAME(), N'SA_Vehicle', @@ROWCOUNT, 'INFO', N'Finished population of SA_Vehicle table.');
+        EXEC [TransitDW].[Global].LogAction
+             @TableName     = N'SA_Vehicle',
+             @RowsAffected  = @@ROWCOUNT,
+             @SeverityLevel = 'INFO',
+             @Description   = N'Finished population of SA_Vehicle table.',
+             @ProcedureName = N'Fill_SA_Vehicle';
     END TRY
     BEGIN CATCH
+        DECLARE @desc NVARCHAR(MAX) = ERROR_MESSAGE();
+
         -- Logging Error
-        INSERT INTO [TransitDW].[Global].[Log] (ProcedureName, ExecutedBy, TableName, RowsAffected, SeverityLevel, Description)
-        VALUES (N'Fill_SA_Vehicle', SUSER_SNAME(), N'SA_Vehicle', NULL, 'ERROR', ERROR_MESSAGE());
+        EXEC [TransitDW].[Global].LogAction
+             @TableName     = N'SA_Vehicle',
+             @RowsAffected  = 0,
+             @SeverityLevel = 'ERROR',
+             @Description   = @desc,
+             @ProcedureName = N'Fill_SA_Vehicle';
+
         THROW;
     END CATCH
 END
-GO
-
+go
 
 /*********************    Procedure to fill SA_VehicleStatusHistory *********************/
+
 CREATE OR ALTER PROCEDURE Fill_SA_VehicleStatusHistory
 AS
 BEGIN
     -- Logging Procedure Start
-    INSERT INTO [TransitDW].[Global].[Log] (ProcedureName, ExecutedBy, TableName, RowsAffected, SeverityLevel, Description)
-    VALUES (N'Fill_SA_VehicleStatusHistory', SUSER_SNAME(), N'SA_VehicleStatusHistory', NULL, 'INFO', N'Starting population of SA_VehicleStatusHistory table.');
+    EXEC [TransitDW].[Global].LogAction
+         @TableName     = N'SA_VehicleStatusHistory',
+         @RowsAffected  = 0,
+         @SeverityLevel = 'INFO',
+         @Description   = N'Starting population of SA_VehicleStatusHistory table.',
+         @ProcedureName = N'Fill_SA_VehicleStatusHistory';
 
-	Truncate table SA_VehicleStatusHistory;
+    TRUNCATE TABLE SA_VehicleStatusHistory;
 
     BEGIN TRY
         -- Data Transformation/Cleansing (Example: Handle missing or invalid data)
@@ -767,33 +1087,46 @@ BEGIN
             VehicleStatusID, 
             StatusStartDT, 
             StatusEndDT
-        FROM [Transport].VehicleStatusHistory
-        WHERE VehicleID IS NOT NULL AND VehicleStatusID IS NOT NULL AND StatusStartDT IS NOT NULL;  -- Cleansing: Ensure necessary fields are not null
+        FROM [Transit].[Transport].VehicleStatusHistory
+        WHERE VehicleID IS NOT NULL AND VehicleStatusID IS NOT NULL AND StatusStartDT IS NOT NULL;
 
         -- Logging Procedure End
-        INSERT INTO [TransitDW].[Global].[Log] (ProcedureName, ExecutedBy, TableName, RowsAffected, SeverityLevel, Description)
-        VALUES (N'Fill_SA_VehicleStatusHistory', SUSER_SNAME(), N'SA_VehicleStatusHistory', @@ROWCOUNT, 'INFO', N'Finished population of SA_VehicleStatusHistory table.');
+        EXEC [TransitDW].[Global].LogAction
+             @TableName     = N'SA_VehicleStatusHistory',
+             @RowsAffected  = @@ROWCOUNT,
+             @SeverityLevel = 'INFO',
+             @Description   = N'Finished population of SA_VehicleStatusHistory table.',
+             @ProcedureName = N'Fill_SA_VehicleStatusHistory';
     END TRY
     BEGIN CATCH
+        DECLARE @desc NVARCHAR(MAX) = ERROR_MESSAGE();
+
         -- Logging Error
-        INSERT INTO [TransitDW].[Global].[Log] (ProcedureName, ExecutedBy, TableName, RowsAffected, SeverityLevel, Description)
-        VALUES (N'Fill_SA_VehicleStatusHistory', SUSER_SNAME(), N'SA_VehicleStatusHistory', NULL, 'ERROR', ERROR_MESSAGE());
+        EXEC [TransitDW].[Global].LogAction
+             @TableName     = N'SA_VehicleStatusHistory',
+             @RowsAffected  = 0,
+             @SeverityLevel = 'ERROR',
+             @Description   = @desc,
+             @ProcedureName = N'Fill_SA_VehicleStatusHistory';
+
         THROW;
     END CATCH
 END
-GO
-
-
+go
 /*********************    Procedure to fill SA_Journey *********************/
+
 CREATE OR ALTER PROCEDURE Fill_SA_Journey
 AS
 BEGIN
     -- Logging Procedure Start
-    INSERT INTO [TransitDW].[Global].[Log] (ProcedureName, ExecutedBy, TableName, RowsAffected, SeverityLevel, Description)
-    VALUES (N'Fill_SA_Journey', SUSER_SNAME(), N'SA_Journey', NULL, 'INFO', N'Starting population of SA_Journey table.');
+    EXEC [TransitDW].[Global].LogAction
+         @ProcedureName = N'Fill_SA_Journey',
+         @TableName     = N'SA_Journey',
+         @RowsAffected  = 0,
+         @SeverityLevel = 'INFO',
+         @Description   = N'Starting population of SA_Journey table.';
 
-	Truncate table SA_Journey;
-
+    TRUNCATE TABLE SA_Journey;
 
     BEGIN TRY
         -- Data Transformation/Cleansing (Example: Handle missing fields and ensure non-null values)
@@ -809,26 +1142,36 @@ BEGIN
             ActualEndDT, 
             DistanceKM, 
             PassengerCount
-        FROM [Transport].Journey
+        FROM Transit.[Transport].Journey
         WHERE JourneyID IS NOT NULL 
           AND VehicleID IS NOT NULL 
-          AND RouteID IS NOT NULL;  -- Cleansing: Ensure JourneyID, VehicleID, and RouteID are non-null
+          AND RouteID IS NOT NULL;
 
         -- Logging Procedure End
-        INSERT INTO [TransitDW].[Global].[Log] (ProcedureName, ExecutedBy, TableName, RowsAffected, SeverityLevel, Description)
-        VALUES (N'Fill_SA_Journey', SUSER_SNAME(), N'SA_Journey', @@ROWCOUNT, 'INFO', N'Finished population of SA_Journey table.');
+        EXEC [TransitDW].[Global].LogAction
+             @ProcedureName = N'Fill_SA_Journey',
+             @TableName     = N'SA_Journey',
+             @RowsAffected  = @@ROWCOUNT,
+             @SeverityLevel = 'INFO',
+             @Description   = N'Finished population of SA_Journey table.';
     END TRY
     BEGIN CATCH
+        DECLARE @desc NVARCHAR(MAX) = ERROR_MESSAGE();
+
         -- Logging Error
-        INSERT INTO [TransitDW].[Global].[Log] (ProcedureName, ExecutedBy, TableName, RowsAffected, SeverityLevel, Description)
-        VALUES (N'Fill_SA_Journey', SUSER_SNAME(), N'SA_Journey', NULL, 'ERROR', ERROR_MESSAGE());
+        EXEC [TransitDW].[Global].LogAction
+             @ProcedureName = N'Fill_SA_Journey',
+             @TableName     = N'SA_Journey',
+             @RowsAffected  = 0,
+             @SeverityLevel = 'ERROR',
+             @Description   = @desc;
+
         THROW;
     END CATCH
 END
-GO
-
-
+go
 /*********************    Procedure to fill SA_JourneyStatusEvent *********************/
+
 CREATE OR ALTER PROCEDURE Fill_SA_JourneyStatusEvent -- with while we should do it 
 AS
 BEGIN
@@ -846,7 +1189,7 @@ BEGIN
             JourneyID, 
             StatusDT, 
             JourneyStatusID
-        FROM [Transport].JourneyStatusEvent
+        FROM Transit.[Transport].JourneyStatusEvent
         WHERE JourneyID IS NOT NULL 
           AND StatusDT IS NOT NULL 
           AND JourneyStatusID IS NOT NULL;  -- Cleansing: Ensure necessary fields are non-null
@@ -862,10 +1205,9 @@ BEGIN
         THROW;
     END CATCH
 END
-GO
-
-
+go
 /*********************    Procedure to fill SA_ArrivalEvent *********************/
+
 CREATE OR ALTER PROCEDURE Fill_SA_ArrivalEvent
 AS
 BEGIN
@@ -879,7 +1221,7 @@ BEGIN
 	SELECT @max_source_date = CAST(MAX(ActualArrivalDT) AS DATE) FROM [Transit].[Transport].ArrivalEvent;
 	SELECT @min_source_date = CAST(MIN(ActualArrivalDT) AS DATE) FROM [Transit].[Transport].ArrivalEvent;
 	SELECT @max_sa_date     = CAST(MAX(ActualArrivalDT) AS DATE) FROM [SA_ArrivalEvent];
-	SELECT @curr_date      = ISNULL(@max_sa_date, @min_source_date);
+	SELECT @curr_date      = ISNULL(DATEADD(DAY,1,@max_sa_date), @min_source_date);
 	SELECT @end_date	    = @max_source_date;
 
 	WHILE @curr_date <= @end_date
@@ -897,7 +1239,7 @@ BEGIN
 				AlightedCnt, 
 				CardBoarded, 
 				TicketBoarded
-			FROM [Transport].ArrivalEvent
+			FROM Transit.[Transport].ArrivalEvent
 			WHERE 
 					CAST(ActualArrivalDT AS DATE) = @curr_date 
 				AND
@@ -920,10 +1262,9 @@ BEGIN
 	END
 
 END
-GO
-
-
+go
 /*********************    Procedure to fill SA_PaymentDevice *********************/
+
 CREATE OR ALTER PROCEDURE Fill_SA_PaymentDevice
 AS
 BEGIN
@@ -948,7 +1289,7 @@ BEGIN
             FirmwareVersion, 
             LastServiceDT, 
             IPAddress
-        FROM [Transport].PaymentDevice
+        FROM Transit.[Transport].PaymentDevice
         WHERE DeviceCode IS NOT NULL 
           AND SerialNo IS NOT NULL;  -- Cleansing: Ensure DeviceCode and SerialNo are non-null
 
@@ -963,10 +1304,9 @@ BEGIN
         THROW;
     END CATCH
 END
-GO
-
-
+go
 /*********************    Procedure to fill SA_DeviceAssignment *********************/
+
 CREATE OR ALTER PROCEDURE Fill_SA_DeviceAssignment
 AS
 BEGIN
@@ -987,7 +1327,7 @@ BEGIN
             StationID, 
             AssignmentStart, 
             AssignmentEnd
-        FROM [Transport].DeviceAssignment
+        FROM Transit.[Transport].DeviceAssignment
         WHERE DeviceID IS NOT NULL;  -- Cleansing: Ensure DeviceID is non-null
 
         -- Logging Procedure End
@@ -1001,10 +1341,9 @@ BEGIN
         THROW;
     END CATCH
 END
-GO
-
-
+go
 /*********************    Procedure to fill SA_PaymentTxn *********************/
+
 CREATE OR ALTER PROCEDURE Fill_SA_PaymentTxn
 AS
 BEGIN
@@ -1018,7 +1357,7 @@ BEGIN
 	SELECT @max_source_date = CAST(MAX(TxnDT) AS DATE) FROM [Transit].[Transport].PaymentTxn;
 	SELECT @min_source_date = CAST(MIN(TxnDT) AS DATE) FROM [Transit].[Transport].PaymentTxn;
 	SELECT @max_sa_date     = CAST(MAX(TxnDT) AS DATE) FROM [SA_PaymentTxn];
-	SELECT @curr_date      = ISNULL(@max_sa_date, @min_source_date);
+	SELECT @curr_date      = ISNULL(DATEADD(DAY,1,@max_sa_date), @min_source_date);
 	SELECT @end_date	    = @max_source_date;
 
 	WHILE @curr_date <= @end_date
@@ -1036,7 +1375,7 @@ BEGIN
 				DeviceID, 
 				TxnDT, 
 				FareAmount
-			FROM [Transport].PaymentTxn
+			FROM Transit.[Transport].PaymentTxn
 			WHERE 
 					CAST(TxnDT AS DATE) = @curr_date 
 			  AND
@@ -1056,10 +1395,9 @@ BEGIN
 	END 
 
 END
-GO
-
-
+go
 /*********************    Procedure to fill SA_Card *********************/
+
 CREATE OR ALTER PROCEDURE Fill_SA_Card
 AS
 BEGIN
@@ -1086,7 +1424,7 @@ BEGIN
                 WHEN IsActive = 0 THEN 'No'
                 ELSE 'No'
             END AS IsActive  -- Cleansing: Ensure IsActive is only 'Yes' or 'No'
-        FROM [Financial].Card
+        FROM Transit.[Financial].Card
         WHERE CardID IS NOT NULL 
           AND IssueDate IS NOT NULL;  -- Cleansing: Ensure CardID and IssueDate are non-null
 
@@ -1101,10 +1439,9 @@ BEGIN
         THROW;
     END CATCH
 END
-GO
-
-
+go
 /*********************    Procedure to fill SA_CardTopUpTxn *********************/
+
 CREATE OR ALTER PROCEDURE Fill_SA_CardTopUpTxn
 AS
 BEGIN
@@ -1118,14 +1455,14 @@ BEGIN
 	SELECT @max_source_date = CAST(MAX(TopUpDT) AS DATE) FROM [Transit].[Financial].CardTopUpTxn;
 	SELECT @min_source_date = CAST(MIN(TopUpDT) AS DATE) FROM [Transit].[Financial].CardTopUpTxn;
 	SELECT @max_sa_date     = CAST(MAX(TopUpDT) AS DATE) FROM [SA_CardTopUpTxn];
-	SELECT @curr_date      = ISNULL(@max_sa_date, @min_source_date);
+	SELECT @curr_date      = ISNULL(DATEADD(DAY,1,@max_sa_date), @min_source_date);
 	SELECT @end_date	    = @max_source_date;
 
 	WHILE @curr_date <= @end_date
 	BEGIN 
 		BEGIN TRY
 			-- Data Transformation/Cleansing (Example: Handle missing fields and ensure non-null values)
-			INSERT INTO SA_CardTopUpTxn (TopUpID, CardID, TopUpDT, Amount, StationID, SalesChannelID)
+			INSERT INTO SA_CardTopUpTxn (TopUpID, CardID, TopUpDT, Amount,StationID,SalesChannelID)
 			SELECT 
 				TopUpID, 
 				CardID, 
@@ -1133,7 +1470,7 @@ BEGIN
 				Amount, 
 				StationID,
 				SalesChannelID
-			FROM [Financial].CardTopUpTxn
+			FROM Transit.[Financial].CardTopUpTxn
 			WHERE 
 					CardID IS NOT NULL 
 			  AND 
@@ -1155,10 +1492,9 @@ BEGIN
 	END
 
 END
-GO
-
-
+go
 /*********************    Procedure to fill SA_Ticket *********************/
+
 CREATE OR ALTER PROCEDURE Fill_SA_Ticket
 AS
 BEGIN
@@ -1181,7 +1517,7 @@ BEGIN
                 WHEN IsActive = 0 THEN 'No'   -- Converting BIT to 'No'
                 ELSE 'No'                     -- Default to 'No' if value is NULL
             END AS IsActive
-        FROM [Financial].Ticket
+        FROM Transit.[Financial].Ticket
         WHERE TicketID IS NOT NULL;  -- Cleansing: Ensure TicketID is non-null
 
         -- Logging Procedure End
@@ -1195,10 +1531,9 @@ BEGIN
         THROW;
     END CATCH
 END
-GO
-
-
+go
 /*********************    Procedure to fill SA_TicketSaleTxn *********************/
+
 CREATE OR ALTER PROCEDURE Fill_SA_TicketSaleTxn
 AS
 BEGIN
@@ -1219,7 +1554,7 @@ BEGIN
             Amount, 
             StationID, 
             SalesChannelID
-        FROM [Financial].TicketSaleTxn
+        FROM Transit.[Financial].TicketSaleTxn
         WHERE TicketID IS NOT NULL 
           AND SaleDT IS NOT NULL;  -- Cleansing: Ensure TicketID and SaleDT are non-null
 
@@ -1234,10 +1569,9 @@ BEGIN
         THROW;
     END CATCH
 END
-GO
-
-
+go
 /*********************    Procedure to fill SA_Part *********************/
+
 CREATE OR ALTER PROCEDURE Fill_SA_Part
 AS
 BEGIN
@@ -1256,7 +1590,7 @@ BEGIN
             PartCategoryID, 
             PartName, 
             UnitCostLatest
-        FROM [Maintenance].Part
+        FROM Transit.[Maintenance].Part
         WHERE PartID IS NOT NULL 
           AND PartName IS NOT NULL;  -- Cleansing: Ensure PartID and PartName are non-null
 
@@ -1271,10 +1605,9 @@ BEGIN
         THROW;
     END CATCH
 END
-GO
-
-
+go
 /*********************    Procedure to fill SA_Supplier *********************/
+
 CREATE OR ALTER PROCEDURE Fill_SA_Supplier
 AS
 BEGIN
@@ -1302,7 +1635,7 @@ BEGIN
             TaxID, 
             ContactPerson, 
             CreatedDate
-        FROM [Maintenance].Supplier
+        FROM Transit.[Maintenance].Supplier
         WHERE SupplierID IS NOT NULL 
           AND SupplierName IS NOT NULL;  -- Cleansing: Ensure SupplierID and SupplierName are non-null
 
@@ -1317,10 +1650,9 @@ BEGIN
         THROW;
     END CATCH
 END
-GO
-
-
+go
 /*********************    Procedure to fill SA_MaintenanceWorkOrder *********************/
+
 CREATE OR ALTER PROCEDURE Fill_SA_MaintenanceWorkOrder
 AS
 BEGIN
@@ -1349,7 +1681,7 @@ BEGIN
                 WHEN WarrantyClaim = '0' THEN 'No'
                 ELSE 'No'
             END AS WarrantyClaim
-        FROM [Maintenance].MaintenanceWorkOrder
+        FROM Transit.[Maintenance].MaintenanceWorkOrder
         WHERE WorkOrderID IS NOT NULL 
           AND VehicleID IS NOT NULL;  -- Cleansing: Ensure WorkOrderID and VehicleID are non-null
 
@@ -1364,10 +1696,10 @@ BEGIN
         THROW;
     END CATCH
 END
-GO
-
+go
 
 /*********************    Procedure to fill SA_WorkOrderPartReplacement *********************/
+
 CREATE OR ALTER PROCEDURE Fill_SA_WorkOrderPartReplacement
 AS
 BEGIN
@@ -1386,7 +1718,7 @@ BEGIN
             SupplierID, 
             Quantity, 
             UnitCost
-        FROM [Maintenance].WorkOrderPartReplacement
+        FROM Transit.[Maintenance].WorkOrderPartReplacement
         WHERE WorkOrderID IS NOT NULL 
           AND PartID IS NOT NULL;  -- Cleansing: Ensure WorkOrderID and PartID are non-null
 
@@ -1401,10 +1733,10 @@ BEGIN
         THROW;
     END CATCH
 END
-GO
-
+go
 
 /*********************    Procedure to fill SA_FuelingEvent *********************/
+
 CREATE OR ALTER PROCEDURE Fill_SA_FuelingEvent
 AS
 BEGIN
@@ -1424,7 +1756,7 @@ BEGIN
             FuelDT, 
             Liters, 
             Cost
-        FROM [Maintenance].FuelingEvent
+        FROM Transit.[Maintenance].FuelingEvent
         WHERE VehicleID IS NOT NULL 
           AND FuelDT IS NOT NULL;  -- Cleansing: Ensure VehicleID and FuelDT are non-null
 
@@ -1440,9 +1772,8 @@ BEGIN
     END CATCH
 END
 GO
-
-
 /*********************    Procedure to fill SA_Employee *********************/
+
 CREATE OR ALTER PROCEDURE Fill_SA_Employee
 AS
 BEGIN
@@ -1465,7 +1796,10 @@ BEGIN
             DepartmentID, 
             Email, 
             PhoneNumber, 
-            Gender, 
+            CASE 
+			WHEN Gender = 'M' THEN 'Male'
+			ELSE 'Female'
+			END AS Gender, 
             Address, 
             EmergencyName, 
             EmergencyPhone, 
@@ -1473,10 +1807,10 @@ BEGIN
             BaseSalary, 
             CreatedAt, 
             UpdatedAt
-        FROM [HR].Employee
-        WHERE EmpID IS NOT NULL 
-          AND FirstName IS NOT NULL 
-          AND LastName IS NOT NULL;  -- Cleansing: Ensure EmpID, FirstName, and LastName are non-null
+        FROM Transit.[HR].Employee
+        --WHERE EmpID IS NOT NULL 
+        --  AND FirstName IS NOT NULL 
+        --  AND LastName IS NOT NULL;  -- Cleansing: Ensure EmpID, FirstName, and LastName are non-null
 
         -- Logging Procedure End
         INSERT INTO [TransitDW].[Global].[Log] (ProcedureName, ExecutedBy, TableName, RowsAffected, SeverityLevel, Description)
@@ -1489,10 +1823,10 @@ BEGIN
         THROW;
     END CATCH
 END
-GO
-
+go
 
 /*********************    Procedure to fill SA_EmployeeRoleHistory *********************/
+
 CREATE OR ALTER PROCEDURE Fill_SA_EmployeeRoleHistory
 AS
 BEGIN
@@ -1510,7 +1844,7 @@ BEGIN
             RoleStartDT, 
             RoleEndDT, 
             RoleID
-        FROM [HR].EmployeeRoleHistory
+        FROM Transit.[HR].EmployeeRoleHistory
         WHERE EmpID IS NOT NULL 
           AND RoleStartDT IS NOT NULL;  -- Cleansing: Ensure EmpID and RoleStartDT are non-null
 
@@ -1525,10 +1859,10 @@ BEGIN
         THROW;
     END CATCH
 END
-GO
-
+go
 
 /*********************    Procedure to fill SA_Shift *********************/
+
 CREATE OR ALTER PROCEDURE Fill_SA_Shift
 AS
 BEGIN
@@ -1549,7 +1883,7 @@ BEGIN
             ShiftEndDT, 
             HoursWorked, 
             OvertimeHrs
-        FROM [HR].Shift
+        FROM Transit.[HR].Shift
         WHERE EmpID IS NOT NULL 
           AND ShiftStartDT IS NOT NULL;  -- Cleansing: Ensure EmpID and ShiftStartDT are non-null
 
@@ -1564,10 +1898,10 @@ BEGIN
         THROW;
     END CATCH
 END
-GO
-
+go
 
 /*********************    Procedure to fill SA_PayrollTxn *********************/
+
 CREATE OR ALTER PROCEDURE Fill_SA_PayrollTxn
 AS
 BEGIN
@@ -1588,7 +1922,7 @@ BEGIN
             NetPay, 
             TaxAmt, 
             InsuranceAmt
-        FROM [HR].PayrollTxn
+        FROM Transit.[HR].PayrollTxn
         WHERE EmpID IS NOT NULL 
           AND PeriodMonth IS NOT NULL;  -- Cleansing: Ensure EmpID and PeriodMonth are non-null
 
@@ -1603,4 +1937,4 @@ BEGIN
         THROW;
     END CATCH
 END
-GO
+go

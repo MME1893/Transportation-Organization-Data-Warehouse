@@ -40,7 +40,14 @@ IF OBJECT_ID('SA_Employee', 'U') IS NOT NULL DROP TABLE SA_Employee;
 IF OBJECT_ID('SA_EmployeeRoleHistory', 'U') IS NOT NULL DROP TABLE SA_EmployeeRoleHistory;
 IF OBJECT_ID('SA_Shift', 'U') IS NOT NULL DROP TABLE SA_Shift;
 IF OBJECT_ID('SA_PayrollTxn', 'U') IS NOT NULL DROP TABLE SA_PayrollTxn;
+IF OBJECT_ID('SA_RouteStation', 'U') IS NOT NULL DROP TABLE SA_RouteStation;
 
+
+CREATE TABLE SA_RouteStation (
+	RouteKey INT,
+	StationKey INT,
+	SeqNo         SMALLINT
+);
 
 
 CREATE TABLE SA_LkpVehicleType (

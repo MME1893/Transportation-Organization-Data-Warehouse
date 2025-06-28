@@ -48,6 +48,15 @@ IF OBJECT_ID(N'Temp.temp5_FactAccTicketSale', N'U') IS NOT NULL DROP TABLE Temp.
 IF OBJECT_ID(N'Temp.temp6_FactAccTicketSale', N'U') IS NOT NULL DROP TABLE Temp.temp6_FactAccTicketSale;
 
 
+
+CREATE TABLE Temp.temp1_cross_RouteStation_PaymentMethodType
+(
+	StationKey INT,
+	RouteKey INT,
+	PaymentMethodKey INT
+)
+
+
 /*********************    DimEmployee Temp Tables    *********************/
 CREATE TABLE Temp.temp1_DimEmployee (
 	EmpID_SK		INT,

@@ -311,35 +311,35 @@ AS
 		WHILE @current_date <= @end_date
 
 			BEGIN 
-				INSERT INTO [Financial].FactTrnsCardTopUp
-				(
-					DateKey,
-					StationKey,
-					TimeKey,
-					SalesChannelKey,
-					CardTypeKey,
-					CardStatusKey,
-					Amount
-				)
-				SELECT 
-					CAST(CONVERT(VARCHAR(8), txn.TopUpDT, 112) AS INT) AS DateKey,
-					txn.StationID,
-					CAST(DATEPART(HOUR, txn.TopUpDT) * 100 + DATEPART(MINUTE, txn.TopUpDT) AS SMALLINT) as TimeKey,
-					txn.SalesChannelID,
-					c.CardTypeID,
-					c.CardStatusID,
-					txn.Amount
-				FROM 
-							[TransitSA].dbo.SA_CardTopUpTxn txn
-				LEFT JOIN	
-							[TransitSA].dbo.SA_Card c 
-						ON txn.CardID = c.CardID
-				WHERE  txn.TopUpDT < CAST( (DATEADD(DAY,1,@current_date)) AS DATETIME) AND txn.TopUpDT >= CAST( @current_date AS DATETIME )
+			INSERT INTO [Financial].FactTrnsCardTopUp
+			(
+				DateKey,
+				StationKey,
+				TimeKey,
+				SalesChannelKey,
+				CardTypeKey,
+				CardStatusKey,
+				Amount
+			)
+			SELECT 
+				CAST(CONVERT(VARCHAR(8), txn.TopUpDT, 112) AS INT) AS DateKey,
+				txn.StationID,
+				CAST(DATEPART(HOUR, txn.TopUpDT) * 100 + DATEPART(MINUTE, txn.TopUpDT) AS SMALLINT) as TimeKey,
+				txn.SalesChannelID,
+				c.CardTypeID,
+				c.CardStatusID,
+				txn.Amount
+			FROM 
+						[TransitSA].dbo.SA_CardTopUpTxn txn
+			LEFT JOIN	
+						[TransitSA].dbo.SA_Card c 
+					ON txn.CardID = c.CardID
+			WHERE  txn.TopUpDT < CAST( (DATEADD(DAY,1,@current_date)) AS DATETIME) AND txn.TopUpDT >= CAST( @current_date AS DATETIME )
 
 
 				SET @rows = @@ROWCOUNT;
 				SET @desc = N'Inserted ' + CAST(@rows AS NVARCHAR(20))
-							+ N' rows in date '  
+							+ N' rows in date ' + CONVERT(NVARCHAR(9),@current_date, 112)   
 							+ N' ).';
 				EXEC [Global].LogAction
 						@TableName     = N'FactTrnsCardTopUp',
@@ -397,7 +397,7 @@ AS
 		SELECT	@current_date  = CONVERT(DATE,CAST(MAX(DateKey) AS CHAR(8)) , 112 /*style 112 (ISO “YYYYMMDD”)*/ ) FROM [Financial].FactDailyCardTopUp;
 		SET		@current_date  = DATEADD(DAY, 1 , @current_date);
 
-		SELECT	@end_date	   = CONVERT(DATE,CAST(MAX(DateKey) AS CHAR(8)) , 112 /*style 112 (ISO “YYYYMMDD”)*/ )  FROM [Financial].FactDailyCardTopUp;
+		SELECT	@end_date	   = CONVERT(DATE,CAST(MAX(DateKey) AS CHAR(8)) , 112 /*style 112 (ISO “YYYYMMDD”)*/ )  FROM [Financial].FactTrnsCardTopUp;
 
 		IF @end_date IS NULL 
 		BEGIN
@@ -405,6 +405,22 @@ AS
 			RETURN;
 		END
 		
+
+		
+		TRUNCATE TABLE Temp.temp1_cross_Station_SalesChannel_CardType;
+		INSERT INTO Temp.temp1_cross_Station_SalesChannel_CardType
+		(
+			StationKey, SalesChannelKey, CardTypeKey
+		)
+		SELECT 
+			s.StationID_BK, sc.SalesChannelID_BK, c.CardTypeID_BK
+		FROM 
+			Global.DimStation s
+		CROSS JOIN 
+			Financial.DimSalesChannel sc
+		CROSS JOIN 
+			Financial.DimCardType c
+
 		WHILE @current_date <= @end_date
 
 		BEGIN 
@@ -419,20 +435,25 @@ AS
 				TotalTopUps
 			)
 			SELECT 
-					F.DateKey,
-					F.StationKey,
-					F.SalesChannelKey,
-					F.CardTypeKey,
-					COUNT(*) AS TotalTopUpAmt,
-					SUM(F.Amount) AS TotalTopUps
+					CONVERT(INT, CONVERT(VARCHAR(8), @current_date, 112)) AS DateKey,
+					T.StationKey,
+					T.SalesChannelKey,
+					T.CardTypeKey,
+					SUM  ( CASE WHEN P.StationKey IS NOT NULL THEN P.Amount ELSE 0 END )  AS TotalTopUpAmt,
+					COUNT( CASE WHEN P.StationKey IS NOT NULL THEN 1 END ) AS TotalTopUps
 			FROM 
-				[Financial].FactTrnsCardTopUp f
-			WHERE F.DateKey = CONVERT(INT, CONVERT(VARCHAR(8),@current_date,112))
+				Temp.temp1_cross_Station_SalesChannel_CardType AS T
+			LEFT JOIN
+				[Financial].FactTrnsCardTopUp AS p
+				ON 
+					P.StationKey = T.StationKey AND
+					P.CardTypeKey = T.CardTypeKey AND
+					P.SalesChannelKey = T.SalesChannelKey AND
+					P.DateKey = CONVERT(INT, CONVERT(VARCHAR(8), @current_date, 112))
 			GROUP BY 
-					F.DateKey,
-					F.StationKey,
-					F.SalesChannelKey,
-					F.CardTypeKey
+					T.StationKey,
+					T.SalesChannelKey,
+					T.CardTypeKey
 				
 			SET @rows = @@ROWCOUNT;
 				SET @desc = N'Inserted ' + CAST(@rows AS NVARCHAR(20))
@@ -527,6 +548,14 @@ BEGIN
 	TRUNCATE TABLE [Temp].temp2_FactAccCardTopUp;      -- “yesterday”
 	TRUNCATE TABLE [Temp].temp3_FactAccCardTopUp;      -- “today”
 
+	INSERT INTO [Temp].temp1_FactAccCardTopUp
+	            (StationKey, SalesChannelKey, CardTypeKey,
+            TotalTopUpAmt, MaxTopUpAmt, AvgTopUpAmt, TotalTopUps)
+	SELECT             StationKey, SalesChannelKey, CardTypeKey,
+            TotalTopUpAmt, MaxTopUpAmt, AvgTopUpAmt, TotalTopUps
+	FROM [Financial].FactAccCardTopUp
+
+
 	WHILE @current_date <= @end_date
 	BEGIN
 	/*----------- 2-A  Copy yesterday → temp2 ------------------*/
@@ -607,21 +636,31 @@ BEGIN
     ------------------------------------------------------------------
     -- 3.  Swap into real accumulator & bookmark end date
     ------------------------------------------------------------------
-		BEGIN TRAN;
-			TRUNCATE TABLE [Financial].FactAccCardTopUp;
+	  BEGIN TRAN;
 
-			INSERT INTO [Financial].FactAccCardTopUp
-				  (StationKey, SalesChannelKey, CardTypeKey,
-				   TotalTopUpAmt, MaxTopUpAmt, AvgTopUpAmt, TotalTopUps)
-			SELECT StationKey, SalesChannelKey, CardTypeKey,
-				   TotalTopUpAmt, MaxTopUpAmt, AvgTopUpAmt, TotalTopUps
-			FROM   [Temp].temp1_FactAccCardTopUp;
+        /*— 1) Upsert cumulative totals from temp1 into the real fact —*/
+        MERGE [Financial].FactAccCardTopUp AS tgt
+        USING [Temp].temp1_FactAccCardTopUp AS src
+          ON  tgt.StationKey      = src.StationKey
+          AND tgt.SalesChannelKey = src.SalesChannelKey
+          AND tgt.CardTypeKey     = src.CardTypeKey
+        WHEN MATCHED THEN
+            UPDATE SET
+                tgt.TotalTopUpAmt = src.TotalTopUpAmt,
+                tgt.MaxTopUpAmt   = src.MaxTopUpAmt,
+                tgt.AvgTopUpAmt   = src.AvgTopUpAmt,
+                tgt.TotalTopUps   = src.TotalTopUps
+        WHEN NOT MATCHED BY TARGET THEN
+            INSERT (StationKey, SalesChannelKey, CardTypeKey,
+                    TotalTopUpAmt, MaxTopUpAmt, AvgTopUpAmt, TotalTopUps)
+            VALUES (src.StationKey, src.SalesChannelKey, src.CardTypeKey,
+                    src.TotalTopUpAmt, src.MaxTopUpAmt, src.AvgTopUpAmt, src.TotalTopUps);
 
-			TRUNCATE TABLE [Financial].TimeAccFactCardTopUp;
+        TRUNCATE TABLE [Financial].TimeFactAccCardTopUp;
+        INSERT INTO [Financial].TimeFactAccCardTopUp ([Date])
+        VALUES (@end_date);
 
-			INSERT INTO [Financial].TimeFactAccCardTopUp ([Date])
-			VALUES ( @end_date );
-		COMMIT TRAN;
+	COMMIT TRAN;
 
     ------------------------------------------------------------------
     -- 4.  End-of-run audit
@@ -639,13 +678,13 @@ GO
 
 
 /*********************    FactTrnsTicketSale Table    *********************/
-CREATE OR ALTER PROCEDURE [Financial].Incrementally_Fill_FactTrnsCardTopUp
+CREATE OR ALTER PROCEDURE [Financial].Incrementally_Fill_FactTrnsTicketSale
 AS 
 	BEGIN
 		SET NOCOUNT ON;
 
 		/*-------------------------------------------------------------*/
-		/* 0.  Safety – run only if FactTrnsTap is not empty                  */
+		/* 0.  Safety – run only if FactTrnsTicketSale is not empty                  */
 		/*-------------------------------------------------------------*/
 		IF NOT EXISTS (SELECT 1 FROM [Financial].FactTrnsTicketSale)
 		BEGIN
@@ -770,7 +809,7 @@ AS
 		SELECT	@current_date  = CONVERT(DATE,CAST(MAX(DateKey) AS CHAR(8)) , 112 /*style 112 (ISO “YYYYMMDD”)*/ ) FROM [Financial].FactDailyTicketSale;
 		SET		@current_date  = DATEADD(DAY, 1 , @current_date);
 
-		SELECT	@end_date	   = CONVERT(DATE,CAST(MAX(DateKey) AS CHAR(8)) , 112 /*style 112 (ISO “YYYYMMDD”)*/ )  FROM [Financial].FactDailyTicketSale;
+		SELECT	@end_date	   = CONVERT(DATE,CAST(MAX(DateKey) AS CHAR(8)) , 112 /*style 112 (ISO “YYYYMMDD”)*/ )  FROM [Financial].FactTrnsTicketSale;
 
 		IF @end_date IS NULL 
 		BEGIN
@@ -778,6 +817,18 @@ AS
 			RETURN;
 		END
 		
+		TRUNCATE TABLE Temp.temp1_cross_Station_SalesChannel;
+		INSERT INTO Temp.temp1_cross_Station_SalesChannel
+		( StationKey , SalesChannelKey) 
+		SELECT S.StationID_BK, SC.SalesChannelID_BK
+		FROM 
+			Global.DimStation s
+		CROSS JOIN 
+			Financial.DimSalesChannel sc
+
+
+
+
 		WHILE @current_date <= @end_date
 
 		BEGIN 
@@ -791,18 +842,22 @@ AS
 				TotalRevenue
 			)
 			SELECT 
-					F.DateKey,
-					F.StationKey,
-					F.SalesChannelKey,
-					COUNT(*) AS TotalTopUpAmt,
-					SUM(F.TicketRevenue) AS TotalRevenue
+					20250530,--CONVERT(INT, CONVERT(VARCHAR(8), @current_date, 112)) AS DateKey,
+					T.StationKey,
+					T.SalesChannelKey,
+					COUNT(CASE WHEN TS.StationKey IS NOT NULL THEN 1 END) AS TotalTicketsSold,
+					SUM(CASE WHEN TS.StationKey IS NOT NULL THEN TS.TicketRevenue ELSE 0 END) AS TotalRevenue
 			FROM 
-				[Financial].FactTrnsTicketSale f
-			WHERE F.DateKey = CONVERT(INT, CONVERT(VARCHAR(8),@current_date,112))
-			GROUP BY 
-					F.DateKey,
-					F.StationKey,
-					F.SalesChannelKey
+				Temp.temp1_cross_Station_SalesChannel AS T
+			LEFT JOIN 
+				[Financial].FactTrnsTicketSale AS TS
+				ON 
+					T.StationKey =TS.StationKey AND
+					T.SalesChannelKey = TS.SalesChannelKey AND
+				    TS.DateKey = 20250530--CONVERT(INT, CONVERT(VARCHAR(8), @current_date, 112))
+				GROUP BY
+					T.StationKey,
+					T.SalesChannelKey
 				
 				
 			SET @rows = @@ROWCOUNT;
@@ -839,178 +894,165 @@ CREATE OR ALTER PROCEDURE [Financial].Incrementally_Fill_FactAccTicketSale
 AS
 BEGIN
     SET NOCOUNT ON;
-    
 
-    ------------------------------------------------------------------
-    -- 0.  Start-of-run logging
-    ------------------------------------------------------------------
+    /*---------------------------------------------------------------*/
+    /* 0.  Start log                                                 */
+    /*---------------------------------------------------------------*/
     EXEC [Global].LogAction
          @TableName     = N'FactAccTicketSale',
          @RowsAffected  = 0,
          @SeverityLevel = 'INFO',
-         @Description   = N'Starting accumulator load (Incrementally_Fill_FactAccTicketSale)',
-         @ProcedureName = N'Incrementally_Fill_FactAccTicketSale';
+         @Description   = N'Starting INCREMENTAL load of FactAccTicketSale',
+         @ProcedureName = N'Incremental_Fill_FactAccTicketSale';
 
-
-	IF NOT EXISTS ( SELECT 1 FROM [Financial].FactAccTicketSale) OR NOT EXISTS ( SELECT 1 FROM [Financial].TimeFactAccTicketSale)
-	BEGIN 
-		 EXEC [Global].LogAction
-         @TableName     = N'FactAccTicketSale',
-         @RowsAffected  = 0,
-         @SeverityLevel = 'INFO',
-         @Description   = N'Starting FAILD, NO DATA IN FactAccTap or TimeFactAccTicketSale',
-         @ProcedureName = N'Incrementally_Fill_FactAccTicketSale';
-
-		 RETURN;
-	END
-    ------------------------------------------------------------------
-    -- 1.  Date range discovery
-    ------------------------------------------------------------------
+    /*---------------------------------------------------------------*/
+    /* 1.  Date range                                                */
+    /*     – start = bookmark + 1                                    */
+    /*     – end   = newest day in the daily fact                    */
+    /*---------------------------------------------------------------*/
     DECLARE @current_date DATE,
-            @end_date    DATE,
-			@des        NVARCHAR(MAX),
-			@row_count  INT;
+            @end_date     DATE,
+            @des          NVARCHAR(MAX),
+            @row_count    INT;
 
+    /* last date successfully processed; table always has ≤1 row */
+    SELECT @current_date = DATEADD(DAY, 1, MAX([Date]))
+    FROM   [Financial].TimeFactAccTicketSale;   -- bookmark
 
+    /* safety: if bookmark is empty, fall back to very first date */
+    IF @current_date IS NULL
+        SELECT @current_date =
+               CONVERT(DATE, CAST(MIN(DateKey) AS CHAR(8)), 112)
+        FROM   [Financial].FactDailyTicketSale;
 
-    SELECT  @current_date = CONVERT(DATE,CAST(MIN(DateKey) AS CHAR(8)) , 112 /*style 112 (ISO “YYYYMMDD”)*/ ),
-            @end_date    = CONVERT(DATE,CAST(MAX(DateKey) AS CHAR(8)) , 112 /*style 112 (ISO “YYYYMMDD”)*/ )
-    FROM    [Financial].FactDailyTicketSale;
+    /* newest business date available */
+    SELECT @end_date =
+           CONVERT(DATE, CAST(MAX(DateKey) AS CHAR(8)), 112)
+    FROM   [Financial].FactDailyTicketSale;
 
-    /* resume from the last bookmark if it exists */
-    SELECT @current_date =
-           ISNULL(
-               (SELECT DATEADD(DAY, 1, MAX([Date]) ) FROM [Financial].TimeFactAccTicketSale),
-               @current_date
-           );
-     
-    /* nothing to do? */
-    IF @current_date IS NULL OR @current_date > @end_date
+    /* nothing new? – log and quit */
+    IF @current_date IS NULL 
+       OR @end_date IS NULL 
+       OR @current_date > @end_date
     BEGIN
         EXEC [Global].LogAction
-             @TableName     = N'TimeFactAccTicketSale',
+             @TableName     = N'FactAccTicketSale',
              @RowsAffected  = 0,
              @SeverityLevel = 'INFO',
-             @Description   = N'No new days to process – exiting.',
-             @ProcedureName = N'Incrementally_Fill_FactAccTicketSale';
+             @Description   = N'No new dates to process – exiting.',
+             @ProcedureName = N'Incremental_Fill_FactAccTicketSale';
         RETURN;
     END
 
-    ------------------------------------------------------------------
-    -- 2.  Main day-by-day loop
-    ------------------------------------------------------------------
-	TRUNCATE TABLE [Financial].TimeFactAccCardTopUp;   -- bookmark
-	TRUNCATE TABLE [Temp].temp4_FactAccCardTopUp;      -- running total
-	TRUNCATE TABLE [Temp].temp5_FactAccCardTopUp;      -- “yesterday”
-	TRUNCATE TABLE [Temp].temp6_FactAccCardTopUp;      -- “today”
+    /*---------------------------------------------------------------*/
+    /* 1-B.  House-keeping                                           */
+    /*---------------------------------------------------------------*/
+    TRUNCATE TABLE [Temp].temp1_FactAccTicketSale;  -- running total
+    TRUNCATE TABLE [Temp].temp2_FactAccTicketSale;  -- “yesterday”
+    TRUNCATE TABLE [Temp].temp3_FactAccTicketSale;  -- “today”
 
-	WHILE @current_date <= @end_date
-	BEGIN
-	/*----------- 2-A  Copy yesterday → temp5 ------------------*/
-		TRUNCATE TABLE [Temp].temp5_FactAccCardTopUp;	
-			
-	    INSERT INTO [Temp].temp5_FactAccCardTopUp
-            (StationKey, SalesChannelKey, CardTypeKey,
-            TotalTopUpAmt, MaxTopUpAmt, AvgTopUpAmt, TotalTopUps)
-	    SELECT StationKey, SalesChannelKey, CardTypeKey,
-		        TotalTopUpAmt, MaxTopUpAmt, AvgTopUpAmt, TotalTopUps
-		FROM   [Temp].temp4_FactAccCardTopUp;
+    /* *** NEW ***  seed running-total table with CURRENT contents  */
+    INSERT INTO [Temp].temp1_FactAccTicketSale
+          (StationKey, SalesChannelKey, TotalTicketsSold, TotalRevenue)
+    SELECT StationKey, SalesChannelKey, TotalTicketsSold, TotalRevenue
+    FROM   [Financial].FactAccTicketSale;
+    /*---------------------------------------------------------------*/
 
-		/*----------- 2-B  Load today → temp6 ----------------------*/
-		TRUNCATE TABLE [Temp].temp6_FactAccCardTopUp;
+    /*===============================================================*/
+    /* 2.  Loop day-by-day from @current_date → @end_date            */
+    /*===============================================================*/
+    WHILE @current_date <= @end_date
+    BEGIN
+        /* 2-A  Copy “yesterday” → temp2                              */
+        TRUNCATE TABLE [Temp].temp2_FactAccTicketSale;
 
-		INSERT INTO [Temp].temp6_FactAccCardTopUp
-				(StationKey, SalesChannelKey, CardTypeKey,
-				TotalTopUpAmt, MaxTopUpAmt, AvgTopUpAmt, TotalTopUps)
-		SELECT StationKey,
-				SalesChannelKey,
-				CardTypeKey,
-				TotalTopUpAmt,
-				TotalTopUpAmt,                                           -- MaxTopUpAmt (single-day value)
-				CASE WHEN TotalTopUps = 0
-					THEN 0
-					ELSE TotalTopUpAmt / TotalTopUps END,              -- AvgTopUpAmt (single-day)
-				TotalTopUps
-		FROM   [Financial].FactDailyCardTopUp
-		WHERE  DateKey = CONVERT(INT, CONVERT(VARCHAR(8),@current_date,112));
+        INSERT INTO [Temp].temp2_FactAccTicketSale
+              (StationKey, SalesChannelKey, TotalTicketsSold, TotalRevenue)
+        SELECT StationKey, SalesChannelKey, TotalTicketsSold, TotalRevenue
+        FROM   [Temp].temp1_FactAccTicketSale;
 
-		/*----------- 2-C  Merge yesterday+today → temp4 ----------*/
-		TRUNCATE TABLE [Temp].temp4_FactAccCardTopUp;
+        /* 2-B  Load “today” delta → temp3                           */
+        TRUNCATE TABLE [Temp].temp3_FactAccTicketSale;
 
-		INSERT INTO  [Temp].temp4_FactAccCardTopUp
-				(StationKey, SalesChannelKey, CardTypeKey,
-				TotalTopUpAmt, MaxTopUpAmt, AvgTopUpAmt, TotalTopUps)
-		SELECT
-			COALESCE(t6.StationKey     , t5.StationKey)      AS StationKey,
-			COALESCE(t6.SalesChannelKey, t5.SalesChannelKey) AS SalesChannelKey,
-			COALESCE(t6.CardTypeKey    , t5.CardTypeKey)     AS CardTypeKey,
+        INSERT INTO [Temp].temp3_FactAccTicketSale
+              (StationKey, SalesChannelKey, TotalTicketsSold, TotalRevenue)
+        SELECT StationKey,
+               SalesChannelKey,
+               TotalTicketsSold,
+               TotalRevenue
+        FROM   [Financial].FactDailyTicketSale
+        WHERE  DateKey = CONVERT(INT, CONVERT(CHAR(8), @current_date, 112));
 
-			/* running totals */
-			ISNULL(t5.TotalTopUpAmt,0) + ISNULL(t6.TotalTopUpAmt,0) AS TotalTopUpAmt,
+        /* 2-C  Merge yesterday+today → temp4 (running totals)        */
+        TRUNCATE TABLE [Temp].temp1_FactAccTicketSale;
 
-			/* running MAX (largest single-day top-up value seen so far) */
-			CASE WHEN ISNULL(t5.MaxTopUpAmt,0) > ISNULL(t6.MaxTopUpAmt,0)
-					THEN t5.MaxTopUpAmt ELSE t6.MaxTopUpAmt END         AS MaxTopUpAmt,
+        INSERT INTO [Temp].temp1_FactAccTicketSale
+              (StationKey, SalesChannelKey, TotalTicketsSold, TotalRevenue)
+        SELECT COALESCE(t6.StationKey     , t5.StationKey)      AS StationKey,
+               COALESCE(t6.SalesChannelKey, t5.SalesChannelKey) AS SalesChannelKey,
+               ISNULL(t5.TotalTicketsSold,0) + ISNULL(t6.TotalTicketsSold,0) AS TotalTicketsSold,
+               ISNULL(t5.TotalRevenue    ,0) + ISNULL(t6.TotalRevenue    ,0) AS TotalRevenue
+        FROM   [Temp].temp2_FactAccTicketSale t5
+        FULL   OUTER JOIN [Temp].temp3_FactAccTicketSale t6
+               ON  t5.StationKey      = t6.StationKey
+               AND t5.SalesChannelKey = t6.SalesChannelKey;
 
-			/* running AVG = running sum ÷ running count */
-			CASE WHEN ISNULL(t5.TotalTopUps,0) + ISNULL(t6.TotalTopUps,0) = 0
-					THEN 0
-					ELSE (ISNULL(t5.TotalTopUpAmt,0) + ISNULL(t6.TotalTopUpAmt,0))
-						/ (ISNULL(t5.TotalTopUps,0)  + ISNULL(t6.TotalTopUps,0))
-			END                                                     AS AvgTopUpAmt,
+        /* 2-D  Log per-day                                           */
+        SET @des       = N'Processed DateKey='
+                       + CONVERT(NVARCHAR(8), @current_date, 112);
+        SET @row_count = (SELECT COUNT(*) FROM [Temp].temp3_FactAccTicketSale);
 
-			/* running counts */
-			ISNULL(t5.TotalTopUps,0) + ISNULL(t6.TotalTopUps,0)     AS TotalTopUps
-		FROM   [Temp].temp5_FactAccCardTopUp t5
-		FULL   OUTER JOIN [Temp].temp6_FactAccCardTopUp t6
-				ON  t5.StationKey      = t6.StationKey
-				AND t5.SalesChannelKey = t6.SalesChannelKey
-				AND t5.CardTypeKey     = t6.CardTypeKey;
-		/*----------- 2-D  Per-day log ----------------------------*/
-		SET @des = N'Processed DateKey=' + CONVERT(NVARCHAR(9),@current_date, 112);
-		SET @row_count = (SELECT COUNT(*) FROM [Temp].temp6_FactAccCardTopUp);
+        EXEC [Global].LogAction
+             @TableName     = N'FactAccTicketSale',
+             @RowsAffected  = @row_count,
+             @SeverityLevel = 'INFO',
+             @Description   = @des,
+             @ProcedureName = N'Incremental_Fill_FactAccTicketSale';
 
-		EXEC [Global].LogAction
-				@TableName     = N'FactAccCardTopUp',
-				@RowsAffected  = @row_count,
-				@SeverityLevel = 'INFO',
-				@Description   = @des,
-				@ProcedureName = N'Incrementally_Fill_FactAccCardTopUp';
-		/*----------- 2-E  Bump to next calendar day --------------*/
+        /* 2-E  Next day                                              */
+        SET @current_date = DATEADD(DAY, 1, @current_date);
+    END; -- WHILE
 
-		SET @current_date = DATEADD(DAY , 1 , @current_date);
-	END;
+    /*---------------------------------------------------------------*/
+    /* 3.  Merge running totals back into the real fact              */
+    /*     – do NOT truncate: use MERGE to update / insert           */
+    /*---------------------------------------------------------------*/
+    BEGIN TRAN;
 
-    ------------------------------------------------------------------
-    -- 3.  Swap into real accumulator & bookmark end date
-    ------------------------------------------------------------------
-		BEGIN TRAN;
-			TRUNCATE TABLE [Financial].FactAccCardTopUp;
+        MERGE [Financial].FactAccTicketSale       AS tgt
+        USING [Temp].temp1_FactAccTicketSale      AS src
+          ON  tgt.StationKey      = src.StationKey
+          AND tgt.SalesChannelKey = src.SalesChannelKey
+        WHEN MATCHED THEN
+             UPDATE SET
+                 tgt.TotalTicketsSold = src.TotalTicketsSold,
+                 tgt.TotalRevenue     = src.TotalRevenue
+        WHEN NOT MATCHED BY TARGET THEN
+             INSERT (StationKey, SalesChannelKey,
+                     TotalTicketsSold, TotalRevenue)
+             VALUES (src.StationKey, src.SalesChannelKey,
+                     src.TotalTicketsSold, src.TotalRevenue);
 
-			INSERT INTO [Financial].FactAccCardTopUp
-				  (StationKey, SalesChannelKey, CardTypeKey,
-				   TotalTopUpAmt, MaxTopUpAmt, AvgTopUpAmt, TotalTopUps)
-			SELECT StationKey, SalesChannelKey, CardTypeKey,
-				   TotalTopUpAmt, MaxTopUpAmt, AvgTopUpAmt, TotalTopUps
-			FROM   [Temp].temp4_FactAccCardTopUp;
+        /* bookmark the finish line                                  */
+        TRUNCATE TABLE [Financial].TimeFactAccTicketSale;
+        INSERT  INTO [Financial].TimeFactAccTicketSale ([Date])
+        VALUES (@end_date);
 
-			TRUNCATE TABLE [Financial].TimeAccFactCardTopUp;
+    COMMIT TRAN;
 
-			INSERT INTO [Financial].TimeFactAccCardTopUp ([Date])
-			VALUES ( @end_date );
-		COMMIT TRAN;
+    /*---------------------------------------------------------------*/
+    /* 4.  End log                                                   */
+    /*---------------------------------------------------------------*/
+    SET @des       = N'Incremental load finished up to DateKey='
+                   + CONVERT(NVARCHAR(8), @end_date, 112);
+    SET @row_count = (SELECT COUNT(*) FROM [Financial].FactAccTicketSale);
 
-    ------------------------------------------------------------------
-    -- 4.  End-of-run audit
-    ------------------------------------------------------------------
-	SET @des		= N'Accumulator load complete up to DateKey=' + CAST(@end_date AS NVARCHAR(8));
-	SET @row_count  = (SELECT COUNT(*) FROM [Temp].temp4_FactAccTap);
     EXEC [Global].LogAction
-         @TableName     = N'FactAccCardTopUp',
+         @TableName     = N'FactAccTicketSale',
          @RowsAffected  = @row_count,
          @SeverityLevel = 'INFO',
          @Description   = @des,
-         @ProcedureName = N'Incrementally_Fill_FactAccCardTopUp';
+         @ProcedureName = N'Incremental_Fill_FactAccTicketSale';
 END;
 GO
 

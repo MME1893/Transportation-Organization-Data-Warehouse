@@ -4,7 +4,8 @@
 
 ===============================================================================*/
 
-
+Use Transit
+GO
 
 /* 2. Transport ------------------------------------------------*/
 IF NOT EXISTS (SELECT 1 FROM sys.schemas WHERE name = N'Transport')

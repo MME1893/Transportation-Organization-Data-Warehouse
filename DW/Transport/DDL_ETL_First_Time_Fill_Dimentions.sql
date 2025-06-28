@@ -133,7 +133,7 @@ BEGIN
     /*-------------------------------------------------------------*/
     /* 0.  Safety – run only if DimDevice is empty                  */
     /*-------------------------------------------------------------*/
-    IF EXISTS (SELECT 1 FROM Transport.DimDevice)
+    IF EXISTS (SELECT 1 FROM [Transport].DimDevice)
     BEGIN
         RAISERROR(N'DimDevice already contains data. Aborting first load.',16,1);
         RETURN;
@@ -152,7 +152,7 @@ BEGIN
     /*-------------------------------------------------------------*/
     /* 2.  Truncate & bulk insert                                  */
     /*-------------------------------------------------------------*/
-    TRUNCATE TABLE DimDevice;          -- guarantees empty (idempotent)
+    TRUNCATE TABLE [Transport].DimDevice;          -- guarantees empty (idempotent)
 
     INSERT INTO Transport.DimDevice
           ( DeviceID_BK,  DeviceCode,
@@ -244,12 +244,12 @@ AS
 		TRUNCATE TABLE Transport.FactTrnsTap;          -- guarantees empty (idempotent)
 
 		DECLARE 
-				@end_date     DATETIME,
-				@current_date DATETIME;
+				@end_date     DATE,
+				@current_date DATE;
 
-		SELECT @current_date = MIN(TxnDT) FROM TransitSA.dbo.SA_PaymentTxn
+		SELECT  @current_date = CAST(MIN(TxnDT) AS DATE) FROM TransitSA.dbo.SA_PaymentTxn --2025-01-01 06:03:20.000
 
-		SELECT @end_date	 = MAX(TxnDT) FROM TransitSA.dbo.SA_PaymentTxn
+		SELECT  @end_date	  = CAST(MAX(TxnDT)AS DATE) FROM TransitSA.dbo.SA_PaymentTxn ---2025-05-30 21:58:22.000
 		
 		WHILE @current_date <= @end_date
 
@@ -260,7 +260,8 @@ AS
 					PaymentMethodKey, DeviceKey, FareAmount
 				)
 				SELECT 
-					 ( YEAR(p.TxnDT)*10000 + MONTH(p.TxnDT)*100 + DAY(p.TxnDT) ) AS DateKey,
+					  CAST(CONVERT(VARCHAR(8), p.TxnDT, 112) AS INT) AS DateKey, 
+					  --YEAR(p.TxnDT)*10000 + MONTH(p.TxnDT)*100 + DAY(p.TxnDT) ) AS DateKey,
 					  DATEPART(HOUR,p.TxnDT)   * 100 + DATEPART(MINUTE,p.TxnDT) AS TimeKey,
 					  p.StationID,
 					  p.RouteID,
@@ -272,11 +273,11 @@ AS
 				--LEFT JOIN Global.DimRoute           AS r  ON r.RouteID_BK         = p.RouteID
 				--LEFT JOIN Global.DimPaymentMethod   AS pm ON pm.PaymentMethodID_BK = p.PaymentMethodID
 				--LEFT JOIN Transport.DimDevice          AS dv ON dv.DeviceID_BK       = p.DeviceID
-				WHERE P.TxnDT < CAST( (DATEADD(DAY,1,@current_date)) AS DATETIME) AND P.TxnID >= CAST( @current_date AS DATETIME )
+				WHERE P.TxnDT >= CAST(@current_date AS DATETIME ) AND P.TxnDT < CAST( (DATEADD(DAY,1,@current_date)) AS DATETIME) 
 
 				SET @rows = @@ROWCOUNT;
 				SET @desc = N'Inserted ' + CAST(@rows AS NVARCHAR(20))
-						  + N' rows in date ' + @current_date 
+						  + N' rows in date ' +  CONVERT(NVARCHAR(9),@current_date, 112)   
 						  + N' ).';
 				EXEC [Global].LogAction
 					 @TableName     = N'FactTrnsTap',
@@ -351,6 +352,18 @@ AS
 			RETURN;
 		END
 
+		TRUNCATE TABLE Temp.temp1_cross_RouteStation_PaymentMethodType;
+		INSERT INTO Temp.temp1_cross_RouteStation_PaymentMethodType
+		(StationKey, RouteKey , PaymentMethodKey )
+		SELECT StationKey ,RouteKey , PaymentMethodID_BK
+		FROM Global.DimPaymentMethod
+		CROSS JOIN 
+		(
+			SELECT F.StationKey, F.RouteKey
+			FROM Transport.FactlessRouteStation f
+			GROUP BY F.StationKey, F.RouteKey
+		) as F
+
 		WHILE @current_date <= @end_date
 			BEGIN 
 
@@ -358,28 +371,35 @@ AS
 				(
 					DateKey, StationKey, RouteKey, PaymentMethodKey,
 					TotalBoardings, TotalRevenue 
-				)
-				SELECT 
-					P.DateKey,
-					P.StationKey,
-					P.RouteKey,
-					P.PaymentMethodKey,
-					COUNT(*)			AS TotalBoardings,
-					SUM(P.FareAmount)	AS TotalRevenue
-				FROM [Transport].FactTrnsTap AS P
-				WHERE P.DateKey = CONVERT(INT,CONVERT(VARCHAR(8) , @current_date , 112))
-				GROUP BY 
-					P.DateKey,
-					P.StationKey,
-					P.RouteKey,
-					P.PaymentMethodKey
-					
+			)
+			SELECT 
+				CONVERT(INT, CONVERT(VARCHAR(8), @current_date, 112)) AS DateKey,
+				T.StationKey,
+				T.RouteKey,
+				T.PaymentMethodKey,
+				COUNT(CASE WHEN P.StationKey IS NOT NULL THEN 1 END) AS TotalBoardings,
+				SUM(CASE WHEN P.StationKey IS NOT NULL THEN P.FareAmount ELSE 0 END) AS TotalRevenue
+			FROM 
+				Temp.temp1_cross_RouteStation_PaymentMethodType AS T
+			LEFT JOIN 
+				[Transport].FactTrnsTap AS P
+				ON P.StationKey = T.StationKey 
+				   AND P.RouteKey = T.RouteKey 
+				   AND P.PaymentMethodKey = T.PaymentMethodKey
+				   AND P.DateKey = CONVERT(INT, CONVERT(VARCHAR(8), @current_date, 112))
+			GROUP BY 
+				T.StationKey,
+				T.RouteKey,
+				T.PaymentMethodKey;
+
+				
+
 				SET @rows = @@ROWCOUNT;
 				SET @desc = N'Inserted ' + CAST(@rows AS NVARCHAR(20))
 						  + N' rows in date ' + CONVERT(NVARCHAR(9),@current_date, 112)  
 						  + N' ).';
 				EXEC [Global].LogAction
-					 @TableName     = N'FactTrnsTap',
+					 @TableName     = N'FactDailyTap',
 					 @RowsAffected  = @rows,
 					 @SeverityLevel = 'INFO',
 					 @Description   = @desc,
@@ -422,7 +442,7 @@ BEGIN
     /* 1.  Date range                                              */
     /*-------------------------------------------------------------*/
     DECLARE @currentDay INT, @endDay INT
-			, @des NVARCHAR(MAX) ,@row_count INT;
+          , @des NVARCHAR(MAX), @row_count INT;
 
     SELECT @currentDay = MIN(DateKey),
            @endDay     = MAX(DateKey)
@@ -439,7 +459,9 @@ BEGIN
         RETURN;
     END
 
+    TRUNCATE TABLE [Transport].FactAccTap;
     TRUNCATE TABLE [Transport].TimeAccFactTap;
+
     TRUNCATE TABLE [Temp].temp4_FactAccTap;
     TRUNCATE TABLE [Temp].temp5_FactAccTap;
     TRUNCATE TABLE [Temp].temp6_FactAccTap;
@@ -449,8 +471,11 @@ BEGIN
     /*-------------------------------------------------------------*/
     WHILE @currentDay <= @endDay
     BEGIN
-        /* 2-A  yesterday → temp5  */
+        -- Clear temp tables
         TRUNCATE TABLE [Temp].temp5_FactAccTap;
+        TRUNCATE TABLE [Temp].temp6_FactAccTap;
+
+        -- Copy previous accumulated data
         INSERT INTO [Temp].temp5_FactAccTap
             (StationKey, RouteKey, PaymentMethodKey,
              TotalBoardings, TotalRevenue, MaxRevenue, MinRevenue)
@@ -458,48 +483,44 @@ BEGIN
                TotalBoardings, TotalRevenue, MaxRevenue, MinRevenue
         FROM   [Temp].temp4_FactAccTap;
 
-        /* 2-B  today → temp6 */
-        TRUNCATE TABLE [Temp].temp6_FactAccTap;
+        -- Load today's data
         INSERT INTO [Temp].temp6_FactAccTap
             (StationKey, RouteKey, PaymentMethodKey,
              TotalBoardings, TotalRevenue, MaxRevenue, MinRevenue)
-        SELECT StationKey,
-               RouteKey,
-               PaymentMethodKey,
-               TotalBoardings,
-               TotalRevenue,
+        SELECT StationKey, RouteKey, PaymentMethodKey,
+               TotalBoardings, TotalRevenue,
                TotalRevenue,   -- MaxRevenue
                TotalRevenue    -- MinRevenue
         FROM   [Transport].FactDailyTap
         WHERE  DateKey = @currentDay;
 
-        /* 2-C  FULL OUTER JOIN → temp4 (direct) */
+        -- Accumulate day + previous into temp4
         TRUNCATE TABLE [Temp].temp4_FactAccTap;
         INSERT INTO  [Temp].temp4_FactAccTap
                (StationKey, RouteKey, PaymentMethodKey,
                 TotalBoardings, TotalRevenue, MaxRevenue, MinRevenue)
         SELECT
-            COALESCE(t6.StationKey , t5.StationKey)        AS StationKey,
-            COALESCE(t6.RouteKey   , t5.RouteKey)          AS RouteKey,
+            COALESCE(t6.StationKey , t5.StationKey) AS StationKey,
+            COALESCE(t6.RouteKey   , t5.RouteKey) AS RouteKey,
             COALESCE(t6.PaymentMethodKey, t5.PaymentMethodKey) AS PaymentMethodKey,
-            ISNULL(t5.TotalBoardings,0) + ISNULL(t6.TotalBoardings,0)  AS TotalBoardings,
-            ISNULL(t5.TotalRevenue ,0) + ISNULL(t6.TotalRevenue ,0)    AS TotalRevenue,
-            CASE WHEN ISNULL(t5.MaxRevenue,0) > ISNULL(t6.MaxRevenue,0)
-                 THEN t5.MaxRevenue ELSE t6.MaxRevenue END              AS MaxRevenue,
+            ISNULL(t5.TotalBoardings, 0) + ISNULL(t6.TotalBoardings, 0) AS TotalBoardings,
+            ISNULL(t5.TotalRevenue , 0) + ISNULL(t6.TotalRevenue , 0) AS TotalRevenue,
+            CASE WHEN ISNULL(t5.MaxRevenue, 0) > ISNULL(t6.MaxRevenue, 0)
+                 THEN t5.MaxRevenue ELSE t6.MaxRevenue END AS MaxRevenue,
             CASE
-                 WHEN ISNULL(t5.MinRevenue,0)=0 THEN ISNULL(t6.MinRevenue,0)
-                 WHEN ISNULL(t6.MinRevenue,0)=0 THEN ISNULL(t5.MinRevenue,0)
+                 WHEN ISNULL(t5.MinRevenue, 0) = 0 THEN ISNULL(t6.MinRevenue, 0)
+                 WHEN ISNULL(t6.MinRevenue, 0) = 0 THEN ISNULL(t5.MinRevenue, 0)
                  WHEN t5.MinRevenue < t6.MinRevenue THEN t5.MinRevenue
-                 ELSE t6.MinRevenue END                                 AS MinRevenue
+                 ELSE t6.MinRevenue END AS MinRevenue
         FROM   [Temp].temp5_FactAccTap t5
-        FULL   OUTER JOIN [Temp].temp6_FactAccTap t6
+        FULL OUTER JOIN [Temp].temp6_FactAccTap t6
                ON  t5.StationKey       = t6.StationKey
                AND t5.RouteKey         = t6.RouteKey
                AND t5.PaymentMethodKey = t6.PaymentMethodKey;
-		
-        /* 2-D  daily log */
-		SET  @des= N'Processed DateKey=' + CAST(@currentDay AS NVARCHAR(8));
-		SET @row_count = (SELECT COUNT(*) FROM [Temp].temp6_FactAccTap);
+
+        -- Daily log
+        SET @des = N'Processed DateKey=' + CAST(@currentDay AS NVARCHAR(8));
+        SET @row_count = (SELECT COUNT(*) FROM [Temp].temp6_FactAccTap);
 
         EXEC [Global].LogAction
              @TableName     = N'FactAccTap',
@@ -508,35 +529,33 @@ BEGIN
              @Description   = @des,
              @ProcedureName = N'First_Fill_FactAccTap';
 
-        /* next day */
-        SET @currentDay = YEAR  (CONVERT(date,CAST(@currentDay AS char(8)),112))*10000 +
-                          MONTH (CONVERT(date,CAST(@currentDay AS char(8)),112))*100 +
-                          DAY   (DATEADD(DAY,1,CONVERT(date,CAST(@currentDay AS char(8)),112)));
+        -- Bookmark the processed day
+        --INSERT INTO [Transport].TimeAccFactTap ([Date])
+        --VALUES (CONVERT(date, CAST(@currentDay AS char(8)), 112));
+
+        -- Go to next day
+        SET @currentDay = CONVERT(INT, CONVERT(VARCHAR(8), DATEADD(DAY, 1, CONVERT(DATE, CAST(@currentDay AS CHAR(8)), 112)), 112));
     END
 
     /*-------------------------------------------------------------*/
-    /* 3.  Swap to real table & bookmark                           */
+    /* 3.  Final save into FactAccTap                              */
     /*-------------------------------------------------------------*/
-    BEGIN TRAN;
-        TRUNCATE TABLE [Transport].FactAccTap;
+    INSERT INTO [Transport].FactAccTap
+        (StationKey, RouteKey, PaymentMethodKey,
+         TotalBoardings, TotalRevenue, MaxRevenue, MinRevenue)
+    SELECT StationKey, RouteKey, PaymentMethodKey,
+           TotalBoardings, TotalRevenue, MaxRevenue, MinRevenue
+    FROM   [Temp].temp4_FactAccTap;
 
-        INSERT INTO [Transport].FactAccTap
-            (StationKey, RouteKey, PaymentMethodKey,
-             TotalBoardings, TotalRevenue, MaxRevenue, MinRevenue)
-        SELECT StationKey, RouteKey, PaymentMethodKey,
-               TotalBoardings, TotalRevenue, MaxRevenue, MinRevenue
-        FROM   [Temp].temp4_FactAccTap;
-
-        TRUNCATE TABLE [Transport].TimeAccFactTap;
-        INSERT INTO [Transport].TimeAccFactTap ([Date])
-		VALUES ( CONVERT(date, CAST(@endDay AS char(8)), 112) );
-    COMMIT TRAN;
-
+	
+    TRUNCATE TABLE [Transport].TimeAccFactTap;
+    INSERT INTO  [Transport].TimeAccFactTap ([Date])
+    VALUES (CONVERT(DATE, CAST(@endDay AS CHAR(8)), 112) );
     /*-------------------------------------------------------------*/
     /* 4.  End log                                                 */
     /*-------------------------------------------------------------*/
-	SET @des = N'FIRST load finished up to DateKey=' + CAST(@endDay AS NVARCHAR(8));
-	SET @row_count  = (SELECT COUNT(*) FROM [Temp].temp4_FactAccTap);
+    SET @des = N'FIRST load finished up to DateKey=' + CAST(@endDay AS NVARCHAR(8));
+    SET @row_count = (SELECT COUNT(*) FROM [Temp].temp4_FactAccTap);
 
     EXEC [Global].LogAction
          @TableName     = N'FactAccTap',
@@ -545,6 +564,7 @@ BEGIN
          @Description   = @des,
          @ProcedureName = N'First_Fill_FactAccTap';
 END;
+
 GO;
 
 
@@ -562,7 +582,7 @@ BEGIN
         RETURN;
     END
 
-
+	TRUNCATE TABLE [Transport].FactTrnsArrival;
    
     EXEC [Global].LogAction
          @TableName     = N'FactTrnsArrival',
@@ -640,7 +660,7 @@ BEGIN
 
         EXEC [Global].LogAction
              @TableName     = N'FactTrnsArrival',
-             @RowsAffected  = @rowsToday,
+             @RowsAffected  = @@ROWCOUNT,
              @SeverityLevel = 'INFO',
              @Description   = @msg,
              @ProcedureName = N'First_Fill_FactTrnsArrival';
@@ -676,6 +696,7 @@ BEGIN
         RETURN;
     END
 
+	TRUNCATE TABLE Transport.FactAccJourney;
 	   
     EXEC [Global].LogAction
          @TableName     = N'FactAccJourney',
@@ -706,7 +727,7 @@ BEGIN
 
 	WHILE @current_date <= @end_date
 	BEGIN 
-		INSERT INTO FactAccJourney
+		INSERT INTO Transport.FactAccJourney
 		(
 			JourneyID_BK, DateKey, VehicleKey, RouteKey, DriverKey, 
             TotalPassengers, MaxPassengers, AvgPassengers, 
@@ -739,7 +760,7 @@ BEGIN
 
         EXEC [Global].LogAction
              @TableName     = N'FactAccJourney',
-             @RowsAffected  = @rowsToday,
+             @RowsAffected  = @@ROWCOUNT,
              @SeverityLevel = 'INFO',
              @Description   = @msg,
              @ProcedureName = N'First_Fill_FactAccJourney';
@@ -775,7 +796,8 @@ BEGIN
         RETURN;
     END
 
-	   
+	TRUNCATE TABLE  [Transport].FactDailyVehicleStatus;
+
     EXEC [Global].LogAction
          @TableName     = N'FactDailyVehicleStatus',
          @RowsAffected  = 0,
@@ -807,31 +829,39 @@ BEGIN
 
 	WHILE @current_date <= @end_date
 		BEGIN 
-			INSERT INTO FactDailyVehicleStatus
+			INSERT INTO [Transport].FactDailyVehicleStatus
 			(
 				DateKey,
 				VehicleKey,
-				StatusKey,
 				ActiveHours,
 				TotalPassengers
 			)
 			SELECT 
-					f.DateKey,
-					f.VehicleKey,
-					js.JourneyStatusID,
-					SUM(CAST(FLOOR(f.ActualEndTK / 100) AS DECIMAL(6,2)) + CAST((f.ActualEndTK % 100) / 60.0 AS DECIMAL(6,2))) - SUM(CAST(FLOOR(f.ActualStartTK / 100) AS DECIMAL(6,2)) + CAST((f.ActualStartTK % 100) / 60.0 AS DECIMAL(6,2))),
-					SUM(PassengerCount)
-				FROM Transport.FactTrnsArrival f
-				JOIN TransitSA.dbo.SA_JourneyStatusEvent js
-				ON f.JourneyID_BK = js.JourneyID
-				WHERE 
-						f.DateKey	= CONVERT(INT,CONVERT(VARCHAR(8) , @current_date , 112))
-					AND
-						js.StatusDT = @current_date
-	                            
-				GROUP BY f.VehicleKey,
-						 f.DateKey,
-						 js.JourneyStatusID
+				ISNULL(f.DateKey, CONVERT(INT,CONVERT(VARCHAR(8) , @current_date , 112))) AS DateKey,
+				ISNULL(f.VehicleKey, v.VehicleID_SK) AS VehicleKey,
+				SUM(
+					CASE 
+						WHEN f.ActualEndTK IS NULL OR f.ActualStartTK IS NULL THEN 0
+						ELSE 
+							CAST(FLOOR(f.ActualEndTK / 100) AS DECIMAL(6,2)) + 
+							CAST((f.ActualEndTK % 100) / 60.0 AS DECIMAL(6,2)) - 
+							CAST(FLOOR(f.ActualStartTK / 100) AS DECIMAL(6,2)) - 
+							CAST((f.ActualStartTK % 100) / 60.0 AS DECIMAL(6,2))
+					END
+				) AS ActiveHours,
+				SUM(ISNULL(PassengerCount, 0)) AS TotalPassengers
+				FROM 
+				(
+					SELECT * FROM Transport.FactTrnsArrival
+					WHERE DateKey	= CONVERT(INT,CONVERT(VARCHAR(8) , @current_date , 112))
+				) AS f
+				RIGHT JOIN
+					( 
+						select * from Global.DimVehicle where IsCurrent = 1
+					) as v			
+				ON f.VehicleKey = v.VehicleID_SK           
+				GROUP BY ISNULL(f.VehicleKey,v.VehicleID_SK),
+						 ISNULL(f.DateKey, CONVERT(INT,CONVERT(VARCHAR(8) , @current_date , 112)))
 				
 				SET @msg = N'Loaded ' + CAST(@@ROWCOUNT AS NVARCHAR(20))
 						 + N' rows for date ' + CONVERT(char(10), @current_date, 120);
@@ -843,6 +873,8 @@ BEGIN
 					 @Description   = @msg,
 					 @ProcedureName = N'First_Fill_FactDailyVehicleStatus';
 
+
+				SET @current_date = DATEADD(DAY , 1 , @current_date);
 		END
 
 		SET @msg = N'FIRST load complete up to ' + CONVERT(char(10), @end_date, 120);
@@ -856,3 +888,65 @@ BEGIN
 
 	END
 GO;
+
+
+/*********************    FactlessRouteStation Table    *********************/
+CREATE OR ALTER  PROCEDURE [Transport].First_Fill_FactlessRouteStation
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    /*-------------------------------------------------------------*/
+    /* 0. Safety – run once only                                   */
+    /*-------------------------------------------------------------*/
+    IF EXISTS (SELECT 1 FROM Transport.FactlessRouteStation)
+    BEGIN
+        RAISERROR(N'FactlessRouteStation already contains data. Aborting first load.',
+                  16, 1);
+        RETURN;
+    END
+
+    /*-------------------------------------------------------------*/
+    /* 1. Start-of-run audit                                       */
+    /*-------------------------------------------------------------*/
+    EXEC [Global].LogAction
+         @TableName     = N'FactlessRouteStation',
+         @RowsAffected  = 0,
+         @SeverityLevel = 'INFO',
+         @Description   = N'Starting FIRST load of FactlessRouteStation',
+         @ProcedureName = N'First_Fill_FactlessRouteStation';
+
+    /*-------------------------------------------------------------*/
+    /* 2. Truncate + bulk insert                                   */
+    /*-------------------------------------------------------------*/
+    TRUNCATE TABLE Transport.FactlessRouteStation;      -- guarantees empty
+
+    INSERT INTO Transport.FactlessRouteStation
+           (RouteKey, StationKey,SeqNo)
+    SELECT RouteID, StationID,SeqNo
+    FROM   TransitSA.dbo.SA_RouteStation;           -- source lookup
+
+    DECLARE @rows INT = @@ROWCOUNT;
+
+    /*-------------------------------------------------------------*/
+    /* 3. Log rows inserted                                        */
+    /*-------------------------------------------------------------*/
+    EXEC [Global].LogAction
+         @TableName     = N'FactlessRouteStation',
+         @RowsAffected  = @rows,
+         @SeverityLevel = 'INFO',
+         @Description   = N'First load complete – rows inserted into FactlessRouteStation.',
+         @ProcedureName = N'First_Fill_FactlessRouteStation';
+
+    /*-------------------------------------------------------------*/
+    /* 4. End-of-run audit                                         */
+    /*-------------------------------------------------------------*/
+    EXEC [Global].LogAction
+         @TableName     = N'FactlessRouteStation',
+         @RowsAffected  = 0,
+         @SeverityLevel = 'INFO',
+         @Description   = N'End of FIRST load procedure',
+         @ProcedureName = N'First_Fill_FactlessRouteStation';
+END;
+GO;
+

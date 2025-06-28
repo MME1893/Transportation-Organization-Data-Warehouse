@@ -4,7 +4,8 @@
 
 ===============================================================================*/
 
-
+Use Transit
+GO
 
 /* 3. Financial -----------------------------------------------*/
 IF NOT EXISTS (SELECT 1 FROM sys.schemas WHERE name = N'Financial')
@@ -94,10 +95,9 @@ CREATE TABLE [Financial].CardTopUpTxn (
     TopUpID         BIGINT IDENTITY PRIMARY KEY,        
     CardID          BIGINT NOT NULL                        
         FOREIGN KEY REFERENCES [Financial].Card(CardID),
-	StationID       INT NOT NULL                       
-	FOREIGN KEY REFERENCES [Transport].Station(StationID),
-
-    TopUpDT         DATETIME NOT NULL,                     
+    StationID       INT NOT NULL                       
+        FOREIGN KEY REFERENCES [Transport].Station(StationID),
+	TopUpDT         DATETIME NOT NULL,                     
     Amount          MONEY NOT NULL,                        
     SalesChannelID  INT NOT NULL                           
         FOREIGN KEY REFERENCES [Lookup].LkpSalesChannel(SalesChannelID)
