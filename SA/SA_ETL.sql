@@ -955,57 +955,6 @@ END
 go
 
 
-
-
-/*********************    Procedure to fill SA_RouteStation *********************/
-
-CREATE OR ALTER PROCEDURE Fill_SA_RouteStation
-AS
-BEGIN
-    -- Logging Procedure Start
-    EXEC [TransitDW].[Global].LogAction
-         @TableName     = N'SA_RouteStation',
-         @RowsAffected  = 0,
-         @SeverityLevel = 'INFO',
-         @Description   = N'Starting population of SA_RouteStation table.',
-         @ProcedureName = N'Fill_SA_RouteStation';
-
-    TRUNCATE TABLE SA_RouteStation;
-
-    BEGIN TRY
-        -- Data Transformation/Cleansing (Example: Handle missing fields or incorrect values)
-        INSERT INTO SA_RouteStation (RouteID, SeqNo, StationID)
-        SELECT 
-            RouteID, 
-            SeqNo, 
-            StationID
-        FROM [Transit].[Transport].RouteStation
-        WHERE RouteID IS NOT NULL AND StationID IS NOT NULL;
-
-        -- Logging Procedure End
-        EXEC [TransitDW].[Global].LogAction
-             @TableName     = N'SA_RouteStation',
-             @RowsAffected  = @@ROWCOUNT,
-             @SeverityLevel = 'INFO',
-             @Description   = N'Finished population of SA_RouteStation table.',
-             @ProcedureName = N'Fill_SA_RouteStation';
-    END TRY
-    BEGIN CATCH
-        DECLARE @desc NVARCHAR(MAX) = ERROR_MESSAGE();
-
-        -- Logging Error
-        EXEC [TransitDW].[Global].LogAction
-             @TableName     = N'SA_RouteStation',
-             @RowsAffected  = 0,
-             @SeverityLevel = 'ERROR',
-             @Description   = @desc,
-             @ProcedureName = N'Fill_SA_RouteStation';
-
-        THROW;
-    END CATCH
-END
-go
-
 /*********************    Procedure to fill SA_Vehicle *********************/
 
 CREATE OR ALTER PROCEDURE Fill_SA_Vehicle

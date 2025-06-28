@@ -677,50 +677,83 @@ BEGIN
 		------------------------------------------------------------
 		TRUNCATE TABLE Temp.Staging_FactAccTap;
 
-		INSERT INTO Temp.Staging_FactAccTap
-		(
-		  StationKey,
-		  RouteKey,
-		  PaymentMethodKey,
-		  TotalBoardings,
-		  TotalRevenue,
-		  MaxRevenue,
-		  MinRevenue
-		)
-		SELECT
-		  COALESCE(old.StationKey, n.StationKey)        AS StationKey,
-		  COALESCE(old.RouteKey,   n.RouteKey)          AS RouteKey,
-		  COALESCE(old.PaymentMethodKey, n.PaymentMethodKey) AS PaymentMethodKey,
+		--INSERT INTO Temp.Staging_FactAccTap
+		--(
+		--  StationKey,
+		--  RouteKey,
+		--  PaymentMethodKey,
+		--  TotalBoardings,
+		--  TotalRevenue,
+		--  MaxRevenue,
+		--  MinRevenue
+		--)
+		--SELECT
+		--  COALESCE(old.StationKey, n.StationKey)        AS StationKey,
+		--  COALESCE(old.RouteKey,   n.RouteKey)          AS RouteKey,
+		--  COALESCE(old.PaymentMethodKey, n.PaymentMethodKey) AS PaymentMethodKey,
 
-		  /* add old + new boardings & revenue */
-		  ISNULL(old.TotalBoardings,0) + ISNULL(n.TotalBoardings,0) AS TotalBoardings,
-		  ISNULL(old.TotalRevenue,  0) + ISNULL(n.TotalRevenue,  0) AS TotalRevenue,
+		--  /* add old + new boardings & revenue */
+		--  ISNULL(old.TotalBoardings,0) + ISNULL(n.TotalBoardings,0) AS TotalBoardings,
+		--  ISNULL(old.TotalRevenue,  0) + ISNULL(n.TotalRevenue,  0) AS TotalRevenue,
 
-		  /* pick the higher of old vs new for MaxRevenue */
-		  CASE
-			WHEN old.MaxRevenue IS NULL THEN n.MaxRevenue
-			WHEN n.MaxRevenue   IS NULL THEN old.MaxRevenue
-			WHEN old.MaxRevenue > n.MaxRevenue THEN old.MaxRevenue
-			ELSE n.MaxRevenue
-		  END AS MaxRevenue,
+		--  /* pick the higher of old vs new for MaxRevenue */
+		--  CASE
+		--	WHEN old.MaxRevenue IS NULL THEN n.MaxRevenue
+		--	WHEN n.MaxRevenue   IS NULL THEN old.MaxRevenue
+		--	WHEN old.MaxRevenue > n.MaxRevenue THEN old.MaxRevenue
+		--	ELSE n.MaxRevenue
+		--  END AS MaxRevenue,
 
-		  /* pick the lower of old vs new for MinRevenue */
-		  CASE
-			WHEN old.MinRevenue IS NULL THEN n.MinRevenue
-			WHEN n.MinRevenue   IS NULL THEN old.MinRevenue
-			WHEN old.MinRevenue < n.MinRevenue THEN old.MinRevenue
-			ELSE n.MinRevenue
-		  END AS MinRevenue
-		FROM Transport.FactAccTap        AS old
-		FULL OUTER JOIN Temp.temp1_FactAccTap AS n
-		  ON old.StationKey        = n.StationKey
-		 AND old.RouteKey          = n.RouteKey
-		 AND old.PaymentMethodKey  = n.PaymentMethodKey;
+		--  /* pick the lower of old vs new for MinRevenue */
+		--  CASE
+		--	WHEN old.MinRevenue IS NULL THEN n.MinRevenue
+		--	WHEN n.MinRevenue   IS NULL THEN old.MinRevenue
+		--	WHEN old.MinRevenue < n.MinRevenue THEN old.MinRevenue
+		--	ELSE n.MinRevenue
+		--  END AS MinRevenue
+		--FROM Transport.FactAccTap        AS old
+		--FULL OUTER JOIN Temp.temp1_FactAccTap AS n
+		--  ON old.StationKey        = n.StationKey
+		-- AND old.RouteKey          = n.RouteKey
+		-- AND old.PaymentMethodKey  = n.PaymentMethodKey;
 
 
 		------------------------------------------------------------
 		-- 2) Swap in the new cumulative results
 		------------------------------------------------------------
+		
+       INSERT INTO Temp.Staging_FactAccTap
+              (StationKey, RouteKey, PaymentMethodKey,
+               TotalBoardings, TotalRevenue, MaxRevenue, MinRevenue)
+        SELECT
+               COALESCE(n.StationKey, old.StationKey)   AS StationKey,
+               COALESCE(n.RouteKey,   old.RouteKey)     AS RouteKey,
+               COALESCE(n.PaymentMethodKey, old.PaymentMethodKey) AS PaymentMethodKey,
+
+               /* NO ADDITION — choose NEW totals if they exist */
+               COALESCE(n.TotalBoardings, old.TotalBoardings) AS TotalBoardings,
+               COALESCE(n.TotalRevenue , old.TotalRevenue )   AS TotalRevenue,
+
+               /* max/min logic still valid */
+               CASE
+                   WHEN old.MaxRevenue IS NULL THEN n.MaxRevenue
+                   WHEN n.MaxRevenue   IS NULL THEN old.MaxRevenue
+                   WHEN old.MaxRevenue >  n.MaxRevenue THEN old.MaxRevenue
+                   ELSE n.MaxRevenue
+               END AS MaxRevenue,
+
+               CASE
+                   WHEN old.MinRevenue IS NULL THEN n.MinRevenue
+                   WHEN n.MinRevenue   IS NULL THEN old.MinRevenue
+                   WHEN old.MinRevenue <  n.MinRevenue THEN old.MinRevenue
+                   ELSE n.MinRevenue
+               END AS MinRevenue
+        FROM Transport.FactAccTap        AS old
+        FULL OUTER JOIN Temp.temp1_FactAccTap AS n
+               ON  old.StationKey       = n.StationKey
+               AND old.RouteKey         = n.RouteKey
+               AND old.PaymentMethodKey = n.PaymentMethodKey;
+		
 		TRUNCATE TABLE Transport.FactAccTap;
 
 		INSERT INTO Transport.FactAccTap

@@ -185,13 +185,6 @@ CREATE TABLE SA_Route (
 );
 
 
-CREATE TABLE SA_RouteStation (
-    RouteID   INT,   
-    SeqNo     SMALLINT,                   
-    StationID INT
-);
-
-
 CREATE TABLE SA_Vehicle (
     VehicleID       INT,       
     VehicleTypeID   INT,

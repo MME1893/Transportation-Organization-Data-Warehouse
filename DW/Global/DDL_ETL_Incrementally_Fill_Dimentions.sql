@@ -774,7 +774,7 @@ BEGIN
     DECLARE @mergeResults TABLE (action NVARCHAR(10));
 
     MERGE  [Global].DimStation  AS tgt
-    USING  [Temp].temp_DimStation       AS src
+    USING  [Temp].temp1_DimStation       AS src
           ON tgt.StationID_BK = src.StationID_BK
 
     /*—— update only when ANY attribute changes ————————————*/
@@ -814,22 +814,6 @@ BEGIN
     DECLARE @rowsInserted INT = (SELECT COUNT(*) FROM @mergeResults WHERE action = 'INSERT');
     DECLARE @rowsUpdated  INT = (SELECT COUNT(*) FROM @mergeResults WHERE action = 'UPDATE');
 
-    INSERT INTO DatawareHouse.dbo.Log
-           (procedure_name, [date], [description], table_name, number_of_row_inserted)
-    VALUES ('fill_dim_station', GETDATE(),
-            'rows inserted', '[Global].DimStation', @rowsInserted);
-
-    INSERT INTO DatawareHouse.dbo.Log
-           (procedure_name, [date], [description], table_name, number_of_row_inserted)
-    VALUES ('fill_dim_station', GETDATE(),
-            'rows updated', '[Global].DimStation', @rowsUpdated);
-
-    /*---------------------------------------------------------------
-      4.  End-of-run audit
-    ----------------------------------------------------------------*/
-    INSERT INTO DatawareHouse.dbo.Log
-           (procedure_name, [date], [description], table_name, number_of_row_inserted)
-    VALUES ('fill_dim_station', GETDATE(), 'end run procedure', '', 0);
 END;
 GO
 
